@@ -20,7 +20,7 @@ from data import (
 
 st.set_page_config(
     page_title="HealthBuddy — Asisten Edukasi Kesehatan",
-    page_icon="+",
+    page_icon="🩺",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -159,10 +159,10 @@ def section_state_indicator(bot):
 def section_chat_messages():
     for msg in st.session_state.history:
         if msg["role"] == "user":
-            with st.chat_message("user", avatar="A"):
+            with st.chat_message("user"):
                 st.markdown(msg["content"])
         else:
-            with st.chat_message("assistant", avatar="+"):
+            with st.chat_message("assistant"):
                 st.markdown(msg["content"])
 
 

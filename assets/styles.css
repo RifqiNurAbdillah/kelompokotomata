@@ -383,12 +383,36 @@ a:hover { color: var(--accent); }
     font-size: 16px !important;
     font-weight: 500 !important;
     overflow: hidden;
+    position: relative;
+}
+
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"] svg,
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"] svg {
+    display: none !important;
+}
+
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"]::after {
+    content: "+";
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent-2);
+    line-height: 1;
 }
 
 [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"] {
     background: var(--user-bg) !important;
     color: var(--user-fg) !important;
     border-color: var(--user-bg) !important;
+}
+
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"]::after {
+    content: "A";
+    font-family: 'Instrument Serif', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--user-fg);
+    line-height: 1;
 }
 
 /* The content wrapper Streamlit creates after avatar */
