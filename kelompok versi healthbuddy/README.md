@@ -1,72 +1,72 @@
 # HealthBuddy
 
-> Asisten edukasi kesehatan berbasis Finite State Machine. Dibuat untuk Tugas Akhir mata kuliah Teori Bahasa & Otomata.
+> Asisten edukasi kesehatan berbasis Finite State Machine. Disusun untuk Tugas Akhir mata kuliah Teori Bahasa & Otomata.
 
-Anggap saja ini bot kesehatan yang nggak coba jadi dokter beneran. Dia cuma kebagian tugas mendengarkan keluhan ringan, mengenali gejala, lalu kasih saran perawatan mandiri yang sumbernya bisa lo telusuri. Semuanya berjalan di atas FSM klasik tanpa nyentuh API LLM apapun. Sangat akademis, sangat *teori bahasa otomata*.
+HealthBuddy adalah chatbot kesehatan yang tidak berusaha menjadi pengganti dokter. Tugasnya sederhana: mendengarkan keluhan ringan, mengenali gejala yang disampaikan pengguna, lalu menyajikan saran perawatan mandiri yang sumbernya dapat ditelusuri. Seluruh proses berjalan di atas Finite State Machine klasik tanpa memanggil API model bahasa eksternal.
 
-## Kenapa proyek ini ada
+## Latar Belakang
 
-Tugas mata kuliah, jelas. Tapi kalau cuma demo "halo" "halo balik" rasanya kurang seru. Jadi kami coba bikin sesuatu yang fungsional: chatbot kesehatan yang bisa dipakai konsultasi gejala ringan, baca-baca definisi istilah medis, atau cek panduan P3K. Cocok buat orang yang panik tengah malam dan lupa apakah luka bakar harus disiram air dingin atau ditempel pasta gigi (jawabannya: bukan keduanya — air mengalir suhu ruang, 15-20 menit).
+Tugas mata kuliah ini mensyaratkan pembuatan chatbot tanpa pemanfaatan API kecerdasan buatan eksternal seperti ChatGPT atau layanan serupa. Atas dasar tersebut, seluruh logika percakapan disusun dari aturan yang ditulis secara manual: indeks kata kunci, mesin state, dan pencocokan teks berbasis pola. Domain yang dipilih adalah kesehatan dengan pertimbangan dampak edukatif, karena cukup banyak situasi sehari-hari yang sebenarnya hanya membutuhkan informasi awal sebelum memutuskan langkah berikutnya.
 
-Aturannya satu: **dilarang pakai API AI eksternal**. Jadi semua "kepintaran" bot ini pure dari aturan yang kami tulis tangan. Murni Python, FSM, regex, plus dua library NLP ringan untuk stemming Bahasa Indonesia.
+Aplikasi ini bukan alat diagnosis. Saran yang diberikan dibatasi pada tindakan rumahan yang aman dilakukan tanpa pengawasan medis, seperti kompres, hidrasi, istirahat, dan pengaturan pola makan. Tidak ada rekomendasi obat, dosis, maupun diagnosis klinis.
 
-## Yang dipakai
+## Teknologi
 
-- **Python 3.11+**
-- **Streamlit** untuk antarmuka
-- **Sastrawi** untuk stemming Bahasa Indonesia, biar variasi kata seperti "menyakitkan", "disakiti", "sakit-sakit" tetap dikenali sebagai akar kata yang sama
-- **RapidFuzz** untuk toleransi typo, biar "batok" tetap dikenali sebagai "batuk"
+- **Python 3.11**
+- **Streamlit** untuk antarmuka pengguna
+- **Sastrawi** untuk *stemming* Bahasa Indonesia agar variasi imbuhan seperti "menyakitkan", "disakiti", dan "sakit-sakit" dikenali sebagai satu akar kata
+- **RapidFuzz** untuk toleransi kesalahan ketik, sehingga kata seperti "batok" tetap dikenali sebagai "batuk"
 
-Itu saja. Tidak ada model machine learning yang di-load, tidak ada panggilan keluar ke API manapun.
+Tidak ada model *machine learning* yang dimuat dan tidak ada panggilan keluar ke API mana pun selama aplikasi berjalan.
 
-## Cara menjalankan
+## Cara Menjalankan
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Browser akan otomatis terbuka di `http://localhost:8501`. Kalau tidak, klik link yang muncul di terminal.
+Browser akan otomatis terbuka pada alamat `http://localhost:8501`. Apabila tidak, alamat tersebut dapat diakses secara manual dari tautan yang muncul di terminal.
 
-Kalau cuma mau lihat FSM-nya jalan tanpa UI:
+Untuk menguji FSM tanpa antarmuka:
 
 ```bash
 python smoke_test.py
 ```
 
-Skrip ini menyimulasikan delapan skenario percakapan: greeting, triage multi-turn, definisi istilah, P3K, deteksi gejala kritis, toleransi typo, reset, dan FAQ. Bisa jadi referensi waktu menjelaskan transisi state ke dosen.
+Skrip ini menyimulasikan delapan skenario percakapan: salam pembuka, *triage* multi-turn, pencarian definisi, panduan pertolongan pertama, deteksi gejala kritis, toleransi kesalahan ketik, alur reset, dan pencarian FAQ. Skrip dapat dijadikan referensi pada saat menjelaskan transisi antar-state kepada dosen pembimbing.
 
-## Apa saja yang bisa ditanyakan
+## Cakupan Pertanyaan
 
-- **Konsultasi gejala**, misalnya: *"saya batuk berdahak dan demam ringan sudah dua hari"*
-- **Definisi istilah medis**, misalnya: *"apa itu kolesterol"*
-- **Pertolongan pertama**, misalnya: *"cara mengatasi mimisan"*
-- **Tips gaya hidup sehat**, misalnya: *"berapa lama tidur ideal"*
-- **Nomor darurat kesehatan**, misalnya: *"nomor ambulans"*
+- Konsultasi gejala, sebagai contoh: *"saya batuk berdahak dan demam ringan sudah dua hari"*
+- Pencarian definisi istilah medis, sebagai contoh: *"apa itu kolesterol"*
+- Panduan pertolongan pertama, sebagai contoh: *"cara mengatasi mimisan"*
+- Tips gaya hidup sehat, sebagai contoh: *"berapa lama tidur ideal"*
+- Nomor darurat kesehatan, sebagai contoh: *"nomor ambulans"*
 
-Bot akan otomatis pindah ke mode darurat kalau lo nyebut gejala kritis seperti nyeri dada, kejang, atau stroke. Sistem terkunci sampai lo ketik "mulai ulang". Ini disengaja, biar nggak salah kasih saran di kondisi yang seharusnya langsung ke IGD.
+Sistem akan otomatis berpindah ke mode darurat apabila pengguna menyebutkan gejala kritis seperti nyeri dada, kejang, atau stroke. Pada mode tersebut, sistem akan terkunci sampai pengguna mengetik perintah "mulai ulang". Mekanisme ini disengaja untuk mencegah pemberian saran perawatan mandiri pada kondisi yang seharusnya langsung dirujuk ke instalasi gawat darurat.
 
-## Struktur proyek
+## Struktur Proyek
 
 ```
-healthbuddy/
+kelompok versi healthbuddy/
 ├── app.py              Halaman Streamlit utama
 ├── requirements.txt
-├── smoke_test.py       Tes percakapan tanpa UI
+├── smoke_test.py       Pengujian percakapan tanpa antarmuka
 ├── assets/
 │   └── styles.css      Custom CSS bertema editorial magazine
 ├── core/
-│   ├── fsm.py          Finite State Machine + dialog manager
+│   ├── fsm.py          Finite State Machine dan dialog manager
 │   └── nlp.py          Stemming, scoring gejala, deteksi intent
 └── data/
     ├── diseases.py     30 kondisi medis dengan saran lengkap
     ├── red_flags.py    20 gejala kritis
-    ├── first_aid.py    10 panduan P3K
+    ├── first_aid.py    10 panduan pertolongan pertama
     ├── definitions.py  70+ istilah medis
-    └── faq.py          18 pertanyaan umum + tips wellness
+    └── faq.py          18 pertanyaan umum dan tips wellness
 ```
 
-## Diagram FSM (versi sederhana)
+## Diagram FSM
 
 ```
 IDLE -> GREETING -> MAIN_MENU
@@ -78,51 +78,51 @@ IDLE -> GREETING -> MAIN_MENU
        |         FAQ
     ADVICE  <-->  CLARIFY
 
-Dari state apapun:
+Dari state apa pun:
   - Deteksi gejala kritis -> EMERGENCY (terkunci)
   - Intent reset           -> IDLE
 ```
 
-Setiap transisi state dicatat di `bot.transition_log` dan ditampilkan real-time di panel samping antarmuka. Jadi waktu demo, dosen bisa lihat sendiri state berpindah tiap kali lo ketik sesuatu. Lumayan buat nilai tambah.
+Setiap perpindahan state direkam pada `bot.transition_log` dan ditampilkan secara real-time di panel samping antarmuka. Hal ini memudahkan demonstrasi langsung kepada penguji, karena perubahan state dapat diamati seiring pengguna mengetik input.
 
-## Bagaimana NLP-nya bekerja
+## Cara Kerja NLP
 
-Singkatnya:
+Alur pemrosesan setiap masukan pengguna sebagai berikut:
 
-1. Input mentah dari user dibersihkan, lowercase, hilangkan tanda baca.
-2. Tiap kata di-stem pakai Sastrawi. Misalnya "menyakitkan" jadi "sakit", "kedinginan" jadi "dingin".
-3. Hasil stemming dicocokkan dengan indeks kata kunci yang sudah pre-built dari `data/diseases.py`. Kalau cocok persis, langsung skor. Kalau tidak, RapidFuzz mencoba *partial ratio match* dengan threshold 88%.
-4. Skor diakumulasi antar turn. Jadi kalau user awal bilang "perut perih", lalu turn berikutnya "kembung", bot menggabungkan keduanya untuk skor Maag yang lebih tinggi.
-5. Begitu skor melewati ambang batas (`CONFIDENCE_THRESHOLD = 4.0`), bot pindah ke state ADVICE dan menyajikan saran perawatan.
+1. Input mentah dibersihkan, diubah menjadi huruf kecil, dan tanda baca dihilangkan.
+2. Setiap kata di-*stem* menggunakan Sastrawi. Misalnya, "menyakitkan" menjadi "sakit", dan "kedinginan" menjadi "dingin".
+3. Hasil stemming dicocokkan dengan indeks kata kunci yang telah dibangun sebelumnya dari `data/diseases.py`. Apabila terdapat kecocokan tepat, skor langsung diberikan. Jika tidak, RapidFuzz mencoba *partial ratio match* dengan ambang batas 88 persen.
+4. Skor diakumulasi antar-turn percakapan. Sebagai ilustrasi, apabila pengguna menyebut "perut perih" pada turn pertama dan "kembung" pada turn berikutnya, sistem menggabungkan keduanya menjadi skor Maag yang lebih tinggi.
+5. Ketika skor melampaui ambang batas (`CONFIDENCE_THRESHOLD = 4.0`), sistem berpindah ke state ADVICE dan menyajikan saran perawatan.
 
-Tidak ada training, tidak ada vector embedding, tidak ada model. Cuma indeks string yang dibangun saat aplikasi pertama kali start.
+Tidak ada proses pelatihan, *vector embedding*, maupun pemanggilan model pada arsitektur ini. Seluruh kecerdasan sistem bersumber dari indeks string yang dibangun pada saat aplikasi pertama kali dimuat.
 
-## Sumber knowledge base
+## Sumber Knowledge Base
 
-Disusun manual dari sumber publik yang bebas dipakai:
+Knowledge base disusun secara manual dari sumber publik yang diperbolehkan untuk penggunaan edukasi:
 
-- Kemenkes RI: Pedoman Pengendalian Penyakit, Pedoman Gizi Seimbang
-- WHO: Fact Sheets (public domain)
-- Standar P3K Palang Merah Indonesia
-- Pedoman Imunisasi Kemenkes
+- Kementerian Kesehatan Republik Indonesia: Pedoman Pengendalian Penyakit dan Pedoman Gizi Seimbang
+- World Health Organization: Fact Sheets (public domain)
+- Standar Pertolongan Pertama Pada Kecelakaan, Palang Merah Indonesia
+- Pedoman Imunisasi Kementerian Kesehatan
 
-Kalau ada yang mau menambah penyakit baru, format-nya konsisten dan ada di `data/diseases.py`. Tinggal duplikat satu entry, ganti isinya, restart aplikasi. NLP engine akan otomatis re-index.
+Apabila terdapat kebutuhan untuk menambah penyakit baru, format entri sudah konsisten dan didokumentasikan pada `data/diseases.py`. Pengguna dapat menyalin satu entri yang sudah ada, mengubah isinya, lalu memuat ulang aplikasi. NLP engine akan otomatis melakukan *re-indexing*.
 
-## Catatan penting
+## Catatan Penting
 
-Ini alat edukasi. Bukan pengganti dokter, perawat, atau apoteker beneran. Untuk diagnosis dan pengobatan, tetap konsultasikan dengan tenaga medis profesional. Untuk situasi mengancam nyawa, hubungi **119**.
+Aplikasi ini merupakan alat edukasi, bukan pengganti tenaga medis profesional. Untuk diagnosis dan pengobatan, konsultasi tetap harus dilakukan dengan dokter atau fasilitas kesehatan resmi. Pada situasi yang mengancam jiwa, hubungi nomor darurat **119**.
 
-Saran perawatan yang bot berikan sudah dirancang konservatif: hanya tindakan rumahan yang aman dilakukan tanpa pengawasan medis (kompres, hidrasi, istirahat, pola makan). Tidak ada rekomendasi obat, tidak ada dosis, tidak ada diagnosis pasti. Semua keluhan yang berpotensi serius akan diarahkan untuk segera ke fasilitas kesehatan.
+Saran perawatan yang diberikan dirancang secara konservatif dan hanya mencakup tindakan rumahan yang aman dilakukan tanpa pengawasan medis. Setiap keluhan yang berpotensi serius akan diarahkan untuk segera mendapatkan penanganan di fasilitas kesehatan.
 
 ## Anggota Kelompok
 
-Lihat daftar kontributor di tab GitHub. Pembagian peran:
+Daftar kontributor dapat dilihat pada tab GitHub repository ini. Pembagian peran utama meliputi:
 
-- Knowledge engineering & FSM design
-- NLP engine & stemming
-- UI/UX Streamlit
-- Dokumentasi & pengujian
+- *Knowledge engineering* dan desain FSM
+- Pengembangan NLP engine dan modul stemming
+- Pengembangan UI/UX Streamlit
+- Penyusunan dokumentasi dan pengujian
 
 ## Lisensi
 
-Untuk keperluan akademik. Bebas dipakai dan dikembangkan untuk tugas atau pembelajaran lain.
+Repositori ini disusun untuk keperluan akademik dan dapat digunakan secara bebas untuk tugas atau pembelajaran lebih lanjut.
