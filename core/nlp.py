@@ -25,6 +25,8 @@ INTENT_KEYWORDS = {
     "THANKS": [r"\b(terima kasih|makasih|thanks|thank you|tq|trims)\b"],
     "GOODBYE": [r"\b(bye|sampai jumpa|dadah|sudahan|cukup|selesai|udahan)\b"],
     "HELP": [r"\b(bantuan|help|panduan|cara pakai|menu)\b"],
+    "IDENTITY": [r"\b(siapa kamu|kamu siapa|apa itu healthbuddy|apa itu health buddy|tentang healthbuddy|tentang health buddy|healthbuddy itu apa|health buddy itu apa)\b"],
+    "CAPABILITY": [r"\b(bisa apa|kamu bisa apa|fitur apa|bantu apa|apa yang bisa kamu bantu|fungsi kamu|cara kerja kamu)\b"],
     "EMERGENCY_INFO": [r"\b(nomor (darurat|emergency)|igd|ambulans|119|nomor penting)\b"],
     "ASK_HOSPITAL": [r"\b(rumah sakit|rs |rs\b|cari rs|rs terdekat|rumah sakit terdekat|puskesmas|klinik terdekat|lokasi rs|lokasi rumah sakit)\b"],
     "ASK_DEFINITION": [r"\b(apa itu|apakah itu|definisi|arti|pengertian|maksud (dari|dengan))\b"],

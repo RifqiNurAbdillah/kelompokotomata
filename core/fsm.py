@@ -118,6 +118,16 @@ class HealthBuddyFSM:
             self.response = self._render_help()
             return
 
+        if intent == "IDENTITY":
+            self._transition(State.MAIN_MENU, "intent_identity")
+            self.response = self._render_identity()
+            return
+
+        if intent == "CAPABILITY":
+            self._transition(State.MAIN_MENU, "intent_capability")
+            self.response = self._render_capability()
+            return
+
         if intent == "EMERGENCY_INFO":
             self._transition(State.EMERGENCY_INFO, "intent_emergency_info")
             self.response = self._render_emergency_info()
@@ -248,6 +258,24 @@ class HealthBuddyFSM:
             "4. Ketik **mulai ulang** untuk membersihkan riwayat dan memulai konsultasi baru.\n\n"
             "Sistem ini berbasis FSM dengan 11 state utama dan akan otomatis berpindah ke "
             "**mode darurat** jika mendeteksi gejala kritis."
+        )
+
+    def _render_identity(self):
+        return (
+            "Saya HealthBuddy, asisten edukasi kesehatan berbasis percakapan. "
+            "Saya dirancang untuk membantu membaca keluhan awal, menjelaskan istilah medis, "
+            "memberikan panduan pertolongan pertama, dan mengenali tanda bahaya yang perlu segera dirujuk.\n\n"
+            "Saya bukan dokter dan tidak membuat diagnosis. Peran saya adalah membantu Anda memahami informasi dasar dengan lebih terarah sebelum mengambil langkah berikutnya."
+        )
+
+    def _render_capability(self):
+        return (
+            "HealthBuddy dapat membantu beberapa hal berikut:\n\n"
+            "- Membaca keluhan ringan seperti demam, batuk, maag, pusing, alergi, diare, atau sakit tenggorokan.\n"
+            "- Menjelaskan istilah kesehatan seperti kolesterol, tekanan darah, diabetes, atau imun.\n"
+            "- Menampilkan panduan P3K seperti luka bakar, mimisan, tersedak, pingsan, dan keseleo.\n"
+            "- Mendeteksi red flag seperti nyeri dada, kejang, stroke, atau sesak berat, lalu mengarahkan ke bantuan medis.\n\n"
+            "Silakan tulis keluhan dengan bahasa sehari-hari, misalnya: *perut saya perih dan mual sejak tadi pagi*."
         )
 
     def _render_emergency(self, flag_key):
