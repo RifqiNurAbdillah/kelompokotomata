@@ -76,6 +76,8 @@ def init_state():
         st.session_state.hospital_lookup = False
     if "pending_prompt" not in st.session_state:
         st.session_state.pending_prompt = None
+    if "pending_reply" not in st.session_state:
+        st.session_state.pending_reply = None
     if "thinking_started_at" not in st.session_state:
         st.session_state.thinking_started_at = None
     if "thinking_duration" not in st.session_state:
@@ -159,6 +161,7 @@ def md_to_html(text, animate=False):
     safe = html.escape(text or "")
     safe = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", safe)
     safe = re.sub(r"\*(.*?)\*", r"<em>\1</em>", safe)
+    safe = re.sub(r"_(.*?)_", r"<em>\1</em>", safe)
     lines = safe.splitlines()
     output = []
     in_ul = False
@@ -203,6 +206,7 @@ def md_to_html(text, animate=False):
 def clean_inline_markdown(text):
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text or "")
     text = re.sub(r"\*(.*?)\*", r"\1", text)
+    text = re.sub(r"_(.*?)_", r"\1", text)
     return text
 
 
@@ -364,11 +368,23 @@ def warm_response(raw, prompt=""):
 
 def run_prompt(prompt):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.bot.step(prompt)
+    reply = warm_response(st.session_state.bot.get_response(), prompt)
     st.session_state.pending_prompt = prompt
+    st.session_state.pending_reply = reply
     st.session_state.thinking_started_at = time.time()
-    st.session_state.thinking_duration = round(random.uniform(1.0, 7.0), 1)
+    st.session_state.thinking_duration = thinking_duration_for(reply)
     st.session_state.tip_index += 1
     st.rerun()
+
+
+def thinking_duration_for(reply):
+    length = len(plain_text(reply))
+    if length <= 240:
+        return round(random.uniform(1.2, 2.8), 1)
+    if length <= 720:
+        return round(random.uniform(2.6, 3.9), 1)
+    return round(random.uniform(5.2, 6.8), 1)
 
 
 def nav_button(label, page, key, icon_name):
@@ -531,10 +547,11 @@ def render_chat_messages():
         role = msg["role"]
         label = "Anda" if role == "user" else "HealthBuddy"
         avatar_id = f"avatar_{idx}_{role}"
+        animate_avatar = "1" if idx >= max(0, len(st.session_state.messages) - 3) else "0"
         is_latest_assistant = role == "assistant" and idx == len(st.session_state.messages) - 1 and msg.get("animate")
         body = animated_words(msg["content"]) if is_latest_assistant else md_to_html(msg["content"])
         html_messages.append(
-            f'<div class="hb-chat-row hb-chat-{role}" data-avatar="{avatar_id}" data-role="{role}">'
+            f'<div class="hb-chat-row hb-chat-{role}" data-avatar="{avatar_id}" data-role="{role}" data-lottie="{animate_avatar}">'
             f'<div class="hb-chat-avatar" id="{avatar_id}"></div>'
             f'<div class="hb-chat-bubble"><div class="hb-chat-name">{label}</div><div class="hb-chat-body">{body}</div></div>'
             f'</div>'
@@ -543,7 +560,7 @@ def render_chat_messages():
         thinking_id = "avatar_thinking"
         duration = st.session_state.get("thinking_duration") or 1.8
         html_messages.append(
-            f'<div class="hb-chat-row hb-chat-assistant hb-thinking-row" data-avatar="{thinking_id}" data-role="assistant">'
+            f'<div class="hb-chat-row hb-chat-assistant hb-thinking-row" data-avatar="{thinking_id}" data-role="assistant" data-lottie="1">'
             f'<div class="hb-chat-avatar" id="{thinking_id}"></div>'
             f'<div class="hb-chat-bubble hb-thinking-bubble"><div class="hb-chat-name">Thinking <span id="thinkingCounter">1</span> / {int(round(duration))}s</div>'
             f'<div class="hb-thinking-line"><span class="hb-thinking-cycle"></span><div class="hb-thinking-dots"><span></span><span></span><span></span></div></div></div></div>'
@@ -611,11 +628,16 @@ def render_chat_messages():
         <script>
         const botAnim = {bot_anim};
         const userAnim = {user_anim};
+        const staticBot = '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+        const staticUser = '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
         document.querySelectorAll('.hb-chat-row').forEach((row) => {{
           const avatar = row.querySelector('.hb-chat-avatar');
           const data = row.dataset.role === 'user' ? userAnim : botAnim;
-          if (avatar && window.lottie) {{
+          if (!avatar) return;
+          if (row.dataset.lottie === '1' && window.lottie) {{
             lottie.loadAnimation({{ container: avatar, renderer: 'svg', loop: true, autoplay: true, animationData: data }});
+          }} else {{
+            avatar.innerHTML = row.dataset.role === 'user' ? staticUser : staticBot;
           }}
         }});
         const chat = document.getElementById('chatWindow');
@@ -644,10 +666,10 @@ def complete_pending_reply():
     remaining = max(0, duration - (time.time() - started))
     if remaining > 0:
         time.sleep(remaining)
-    st.session_state.bot.step(prompt)
-    reply = warm_response(st.session_state.bot.get_response(), prompt)
+    reply = st.session_state.get("pending_reply") or warm_response(st.session_state.bot.get_response(), prompt)
     st.session_state.messages.append({"role": "assistant", "content": reply, "animate": True})
     st.session_state.pending_prompt = None
+    st.session_state.pending_reply = None
     st.session_state.thinking_started_at = None
     st.session_state.thinking_duration = None
     st.rerun()
