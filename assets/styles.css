@@ -367,6 +367,25 @@ label {
   transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 }
 
+.hb-landing-note {
+  min-height: 300px;
+  padding: 34px;
+  border-radius: 10px 32px 32px 32px;
+}
+
+.hb-landing-note h3 {
+  max-width: 720px;
+  margin: 12px 0 14px !important;
+  font-size: clamp(32px, 4vw, 52px) !important;
+}
+
+.hb-landing-note p {
+  max-width: 690px;
+  margin: 0;
+  color: var(--fg-soft);
+  line-height: 1.7;
+}
+
 .hb-service-card:hover {
   transform: translateY(-4px) rotate(-0.35deg);
   border-color: var(--accent);
