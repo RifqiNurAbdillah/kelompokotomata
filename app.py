@@ -5,6 +5,7 @@ Designed with clean UI/UX, precise spacing, and fully custom components.
 """
 
 import sys
+import pandas as pd
 from pathlib import Path
 
 # Memastikan core path terintegrasi dengan aman
@@ -21,6 +22,7 @@ from data import (
     FIRST_AID,
     EMERGENCY_NUMBERS,
     WELLNESS_TIPS,
+    find_nearby_hospitals,
 )
 
 # Konfigurasi halaman tingkat premium (Wide Layout)
@@ -169,6 +171,12 @@ def init_session_variables():
         st.session_state.theme = "light"
     if "current_page" not in st.session_state:
         st.session_state.current_page = "BERANDA"
+    if "user_location" not in st.session_state:
+        st.session_state.user_location = None
+    if "show_hospital_finder" not in st.session_state:
+        st.session_state.show_hospital_finder = False
+    if "location_requested" not in st.session_state:
+        st.session_state.location_requested = False
 
 
 def process_chat_cycle(user_message):
@@ -405,10 +413,28 @@ def main():
             # Area Tampilan Pesan Obrolan Bersih
             chat_box_scroller = st.container(height=calculated_height)
             with chat_box_scroller:
-                for message in st.session_state.history:
+                for idx, message in enumerate(st.session_state.history):
                     with st.chat_message(name=message["role"], avatar=message.get("avatar", "🩺")):
                         st.markdown(f"**{message['role']}**")
                         st.markdown(message["content"])
+                        
+                        # Tampilkan tombol pencarian RS langsung di dalam bubble chat saat darurat
+                        # Pastikan tombol hanya muncul pada pesan peringatan awal (bukan di pesan hasil RS)
+                        if (idx == len(st.session_state.history) - 1 and 
+                            message["role"] == "Apoteker HealthBuddy" and 
+                            st.session_state.bot.state == State.EMERGENCY and 
+                            "Rekomendasi 3 Rumah Sakit" not in message["content"]):
+                            
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            
+                            if st.session_state.get('user_location') is None:
+                                bubble_btn_text = "🗺️ Aktifkan Gmaps"
+                            else:
+                                bubble_btn_text = "📍 Perbarui Lokasi"
+                                
+                            if st.button(bubble_btn_text, key="bubble_trigger_hospital", type="primary"):
+                                st.session_state.location_requested = True
+                                st.rerun()
                         
             # Kotak Teks Input Alami
             user_text_input = st.chat_input("Ceritakan keluhan Anda di sini (misal: 'Saya sakit demam')...")
@@ -416,7 +442,7 @@ def main():
                 process_chat_cycle(user_text_input)
                 
             # Panel Kontrol Mikro di bawah kolom chat
-            control_btn_cols = st.columns([1, 1, 3.2])
+            control_btn_cols = st.columns([1, 1, 1, 2.2])
             with control_btn_cols[0]:
                 if st.button("🔄 Segarkan Sesi", use_container_width=True, key="reset_chat_session"):
                     retained_theme = st.session_state.theme
@@ -428,6 +454,41 @@ def main():
             with control_btn_cols[1]:
                 if st.button("💡 Minta Bantuan", use_container_width=True, key="trigger_help_session"):
                     process_chat_cycle("bantuan")
+            with control_btn_cols[2]:
+                st.empty()  # Kosongkan karena tombol dipindah ke dalam bubble
+                
+            # ---- Eksekusi Pencarian RS di Latar Belakang ----
+            if st.session_state.get("location_requested", False):
+                from streamlit_js_eval import get_geolocation
+                loc_result = get_geolocation()
+                
+                if loc_result and isinstance(loc_result, dict) and 'coords' in loc_result:
+                    current_lat = loc_result['coords']['latitude']
+                    current_lon = loc_result['coords']['longitude']
+                    
+                    with st.spinner("🔄 Sedang menelaah data rumah sakit terdekat..."):
+                        hospitals = find_nearby_hospitals(current_lat, current_lon, limit=3)
+                        
+                        hospital_msg = f"🏥 **Rekomendasi 3 Rumah Sakit Terdekat:**\n\n"
+                        if hospitals:
+                            for idx, h in enumerate(hospitals, 1):
+                                hospital_msg += f"**{idx}. {h['name']}** ({h['distance_km']} km)\n"
+                                hospital_msg += f"📍 *{h['address']}*\n\n"
+                            hospital_msg += "_Segera hubungi instalasi gawat darurat (IGD) di rumah sakit pilihan Anda._"
+                        else:
+                            hospital_msg += "😔 Tidak ditemukan data rumah sakit di sekitar wilayah Anda melalui satelit."
+                            
+                        # Tambahkan hasil ke riwayat obrolan sebagai bubble chat
+                        st.session_state.history.append({
+                            "role": "Apoteker HealthBuddy", 
+                            "avatar": "🏥", 
+                            "content": hospital_msg
+                        })
+                        
+                    # Hentikan request lokasi dan simpan state
+                    st.session_state.location_requested = False
+                    st.session_state.user_location = {"lat": current_lat, "lon": current_lon}
+                    st.rerun()
                     
         with main_chat_layout[1]:
             # Rekomendasi Pertanyaan Sering Diajukan (FAQ Akses Instan)
