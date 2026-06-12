@@ -26,6 +26,7 @@ INTENT_KEYWORDS = {
     "GOODBYE": [r"\b(bye|sampai jumpa|dadah|sudahan|cukup|selesai|udahan)\b"],
     "HELP": [r"\b(bantuan|help|panduan|cara pakai|menu)\b"],
     "EMERGENCY_INFO": [r"\b(nomor (darurat|emergency)|igd|ambulans|119|nomor penting)\b"],
+    "ASK_HOSPITAL": [r"\b(rumah sakit|rs |rs\b|cari rs|rs terdekat|rumah sakit terdekat|puskesmas|klinik terdekat|lokasi rs|lokasi rumah sakit)\b"],
     "ASK_DEFINITION": [r"\b(apa itu|apakah itu|definisi|arti|pengertian|maksud (dari|dengan))\b"],
     "ASK_FIRST_AID": [r"\b(p3k|pertolongan pertama|cara mengatasi|cara menangani|kalau .* bagaimana)\b"],
     "ASK_FAQ": [r"\b(berapa lama|berapa banyak|tips|cara hidup sehat|gaya hidup|saran sehat)\b"],

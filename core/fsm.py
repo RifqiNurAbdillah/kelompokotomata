@@ -22,6 +22,7 @@ State diagram:
 
 from enum import Enum, auto
 from data import DISEASES, RED_FLAGS, FIRST_AID, DEFINITIONS, FAQ, EMERGENCY_NUMBERS, CATEGORIES, WELLNESS_TIPS
+from data import check_needs_hospital_recommendation, HOSPITAL_RECOMMENDATION_TEXT
 from .nlp import NLPEngine
 
 
@@ -120,6 +121,15 @@ class HealthBuddyFSM:
         if intent == "EMERGENCY_INFO":
             self._transition(State.EMERGENCY_INFO, "intent_emergency_info")
             self.response = self._render_emergency_info()
+            return
+
+        if intent == "ASK_HOSPITAL":
+            self.response = (
+                "Untuk mencari rumah sakit atau klinik terdekat dari lokasi Anda, "
+                "silakan klik tombol **📍 Cari RS Terdekat** di bawah kolom chat.\n\n"
+                "Sistem akan meminta izin akses lokasi dari browser Anda, "
+                "lalu menampilkan daftar rumah sakit terdekat lengkap dengan peta dan jarak."
+            )
             return
 
         if intent == "ASK_DEFINITION":
@@ -242,7 +252,7 @@ class HealthBuddyFSM:
 
     def _render_emergency(self, flag_key):
         info = RED_FLAGS[flag_key]
-        return (
+        text = (
             f"**PERINGATAN GEJALA KRITIS: {flag_key.upper()}**\n\n"
             f"Kategori: {info['kategori']}\n\n"
             f"**Mengapa ini darurat:**\n{info['alasan']}\n\n"
@@ -253,6 +263,9 @@ class HealthBuddyFSM:
             "Sistem dikunci dalam mode darurat. Keselamatan Anda yang utama. "
             "Ketik **mulai ulang** setelah situasi aman."
         )
+        # Selalu tampilkan rekomendasi RS untuk kondisi darurat
+        text += HOSPITAL_RECOMMENDATION_TEXT
+        return text
 
     def _render_emergency_info(self):
         lines = ["**Daftar Nomor Penting Kesehatan:**\n"]
@@ -314,6 +327,9 @@ class HealthBuddyFSM:
             "_Catatan: informasi ini bersifat edukatif, bukan pengganti diagnosis dokter. "
             "Jika gejala memburuk atau tidak membaik dalam 2-3 hari, segera periksa ke fasilitas kesehatan._"
         )
+        # Tambahkan rekomendasi RS jika disease terkait dengan kondisi overlap
+        if check_needs_hospital_recommendation(disease_key):
+            lines.append(HOSPITAL_RECOMMENDATION_TEXT)
         return "\n".join(lines)
 
     def _render_clarify(self):
@@ -336,6 +352,9 @@ class HealthBuddyFSM:
             lines.append(f"{i}. {step}")
         lines.append("")
         lines.append(f"**Peringatan:** {info['warning']}")
+        # Tambahkan rekomendasi RS jika kondisi juga ada di RED_FLAGS
+        if check_needs_hospital_recommendation(topic):
+            lines.append(HOSPITAL_RECOMMENDATION_TEXT)
         return "\n".join(lines)
 
     def _render_first_aid_menu(self):
