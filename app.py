@@ -266,17 +266,99 @@ def animated_words(text):
     return md_to_typewriter_html(text)
 
 
-def warm_response(raw):
+RESPONSE_OPENERS = [
+    "Saya tangkap keluhan yang Anda sampaikan. Mari kita uraikan pelan-pelan.",
+    "Terima kasih sudah menjelaskan. Dari cerita Anda, ada beberapa hal yang bisa diperhatikan.",
+    "Saya pahami, kondisi seperti itu tentu membuat tidak nyaman. Berikut rangkuman edukatifnya.",
+    "Baik, saya baca keluhannya sebagai informasi awal. Ini penjelasan yang paling relevan.",
+    "Mari kita lihat kemungkinan arah keluhannya secara hati-hati.",
+    "Saya akan bantu susun informasi dasarnya agar lebih mudah dipahami.",
+    "Keluhan Anda sudah saya catat. Berikut panduan awal yang aman untuk dipertimbangkan.",
+    "Saya mengerti. Kita fokus dulu pada gejala yang paling menonjol.",
+    "Dari pesan Anda, saya akan berikan arahan edukatif yang konservatif.",
+    "Saya bantu bacakan pola keluhannya dengan pendekatan sederhana.",
+    "Terlihat ada beberapa tanda yang bisa dipahami sebagai keluhan ringan, tetapi tetap perlu dipantau.",
+    "Saya akan jawab dengan ringkas, tetap aman, dan mudah diikuti.",
+    "Kita mulai dari hal yang paling mungkin dan paling aman dilakukan terlebih dahulu.",
+    "Saya paham keluhannya. Berikut informasi awal yang bisa membantu Anda mengambil langkah berikutnya.",
+    "Baik, saya coba rangkum tanpa membuat kesimpulan medis yang berlebihan.",
+    "Mari kita susun responsnya dari gejala, perawatan mandiri, lalu tanda waspada.",
+    "Saya bantu jelaskan dengan bahasa sederhana agar tidak membingungkan.",
+    "Keluhan tersebut bisa terasa mengganggu. Berikut panduan awal yang dapat Anda baca.",
+    "Saya akan menjaga jawabannya tetap edukatif dan tidak menggantikan pemeriksaan medis.",
+    "Dari konteks yang Anda tulis, berikut gambaran yang dapat dipertimbangkan.",
+    "Terima kasih, informasinya cukup membantu untuk respons awal.",
+    "Saya akan menanggapi berdasarkan gejala yang Anda sebutkan, bukan sebagai diagnosis pasti.",
+    "Mari kita gunakan pendekatan aman: pahami gejala, lakukan perawatan ringan, lalu pantau perubahannya.",
+    "Saya akan bantu membedakan mana yang bisa dipantau di rumah dan mana yang perlu diperiksa.",
+    "Kita lihat dulu keluhan ini dari sudut edukasi kesehatan dasar."
+]
+
+RESPONSE_CLOSERS = [
+    "Jika keluhan memburuk, muncul tanda bahaya, atau tidak membaik dalam beberapa hari, sebaiknya periksa ke fasilitas kesehatan.",
+    "Pantau perubahan gejala dan jangan menunda bantuan medis bila kondisi terasa semakin berat.",
+    "Gunakan informasi ini sebagai panduan awal, bukan pengganti diagnosis dari tenaga kesehatan.",
+    "Bila ada riwayat penyakit tertentu, sedang hamil, lanjut usia, atau gejala terasa berat, konsultasi langsung akan lebih aman."
+]
+
+CONTEXT_BRIDGES = {
+    "demam": "Karena Anda menyebut demam atau rasa panas, perhatian utama adalah hidrasi, istirahat, dan pemantauan suhu.",
+    "batuk": "Karena ada keluhan batuk atau tenggorokan, perhatikan pola batuk, dahak, dan ada tidaknya sesak.",
+    "maag": "Karena keluhan mengarah ke lambung, pola makan dan pemicu seperti pedas, asam, kopi, atau telat makan perlu diperhatikan.",
+    "pusing": "Karena Anda menyebut pusing atau sakit kepala, penting juga memperhatikan tidur, hidrasi, dan pola makan hari ini.",
+    "diare": "Karena ada keluhan pencernaan, fokus utamanya adalah mencegah dehidrasi dan memilih makanan yang mudah dicerna.",
+    "alergi": "Karena keluhan mungkin berkaitan dengan alergi, coba ingat pemicu terakhir seperti makanan, debu, udara dingin, atau obat tertentu.",
+}
+
+
+def pick_variant(options, seed_text):
+    idx = sum(ord(ch) for ch in seed_text) % len(options)
+    return options[idx]
+
+
+def context_bridge(prompt):
+    text = (prompt or "").lower()
+    for key, bridge in CONTEXT_BRIDGES.items():
+        if key in text:
+            return bridge
+    if any(word in text for word in ["mual", "perut", "lambung", "kembung", "perih"]):
+        return CONTEXT_BRIDGES["maag"]
+    if any(word in text for word in ["flu", "pilek", "tenggorokan", "dahak"]):
+        return CONTEXT_BRIDGES["batuk"]
+    return "Saya akan menyesuaikan jawaban dengan gejala yang paling jelas dari pesan Anda."
+
+
+def should_wrap_response(raw):
+    lower = raw.lower()
+    skip_markers = [
+        "halo, saya healthbuddy",
+        "saya healthbuddy",
+        "healthbuddy dapat membantu",
+        "cara berinteraksi",
+        "terima kasih sudah berkonsultasi",
+        "sama-sama",
+        "peringatan gejala kritis",
+        "sistem masih dalam mode peringatan darurat",
+    ]
+    return not any(marker in lower for marker in skip_markers)
+
+
+def warm_response(raw, prompt=""):
     text = raw.strip()
     emergency = "PERINGATAN GEJALA KRITIS" in text or "mode peringatan darurat" in text.lower()
     if emergency:
         return text
-    if text.startswith("Halo"):
+    if not should_wrap_response(text):
         return text
+    seed = f"{prompt}|{text}"
+    opener = pick_variant(RESPONSE_OPENERS, seed)
+    bridge = context_bridge(prompt)
+    closer = pick_variant(RESPONSE_CLOSERS, seed[::-1])
     return (
-        "Baik, saya bantu rangkum dengan tenang. Informasi berikut bersifat edukatif dan tidak menggantikan pemeriksaan tenaga medis.\n\n"
+        f"{opener}\n\n"
+        f"{bridge}\n\n"
         f"{text}\n\n"
-        "Jika keluhan terasa memburuk, berlangsung beberapa hari, atau disertai tanda bahaya, sebaiknya segera periksa ke fasilitas kesehatan terdekat."
+        f"{closer}"
     )
 
 
@@ -563,7 +645,7 @@ def complete_pending_reply():
     if remaining > 0:
         time.sleep(remaining)
     st.session_state.bot.step(prompt)
-    reply = warm_response(st.session_state.bot.get_response())
+    reply = warm_response(st.session_state.bot.get_response(), prompt)
     st.session_state.messages.append({"role": "assistant", "content": reply, "animate": True})
     st.session_state.pending_prompt = None
     st.session_state.thinking_started_at = None
