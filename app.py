@@ -3,6 +3,7 @@
 import html
 import re
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -24,7 +25,7 @@ from data import (
 
 st.set_page_config(
     page_title="HealthBuddy - Asisten Edukasi Kesehatan",
-    page_icon=":material/health_and_safety:",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -47,14 +48,10 @@ def load_styles():
 def inject_runtime(theme):
     components.html(
         f"""
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
         <script>
         const doc = window.parent.document;
         doc.documentElement.setAttribute('data-hb-theme', '{theme}');
         doc.body.setAttribute('data-hb-theme', '{theme}');
-        setTimeout(() => {{
-          if (window.parent.lucide) window.parent.lucide.createIcons();
-        }}, 120);
         </script>
         """,
         height=0,
@@ -76,6 +73,8 @@ def init_state():
         st.session_state.tip_index = 0
     if "hospital_lookup" not in st.session_state:
         st.session_state.hospital_lookup = False
+    if "pending_prompt" not in st.session_state:
+        st.session_state.pending_prompt = None
 
 
 def preserve_theme_reset(page="CHAT"):
@@ -87,7 +86,47 @@ def preserve_theme_reset(page="CHAT"):
 
 
 def icon(name, size=18):
-    return f'<i data-lucide="{name}" style="width:{size}px;height:{size}px"></i>'
+    paths = {
+        "cross": '<path d="M12 5v14M5 12h14"/>',
+        "activity": '<path d="M22 12h-4l-3 8L9 4l-3 8H2"/>',
+        "shield-check": '<path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3v8Z"/><path d="m9 12 2 2 4-4"/>',
+        "workflow": '<rect width="8" height="8" x="3" y="3" rx="2"/><rect width="8" height="8" x="13" y="13" rx="2"/><path d="M11 7h4a2 2 0 0 1 2 2v4M7 11v4a2 2 0 0 0 2 2h4"/>',
+        "database": '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>',
+        "message-circle": '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>',
+        "book-open": '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+        "shield-plus": '<path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3v8Z"/><path d="M9 12h6M12 9v6"/>',
+        "user-round": '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+        "triangle-alert": '<path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4M12 17h.01"/>',
+        "phone-call": '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/>',
+    }
+    body = paths.get(name, paths["activity"])
+    return f'<svg class="hb-icon" width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{body}</svg>'
+
+
+def lottie_html(file_name, class_name, height=240):
+    anim_path = Path(__file__).parent / "assets" / "animation" / file_name
+    if not anim_path.exists():
+        return f'<div class="{class_name} hb-lottie-missing"></div>'
+    data = anim_path.read_text(encoding="utf-8")
+    holder_id = f"lottie_{file_name.replace('.', '_').replace('-', '_')}"
+    components.html(
+        f"""
+        <div id="{holder_id}" style="width:100%;height:{height}px"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+        <script>
+        const container = document.getElementById('{holder_id}');
+        lottie.loadAnimation({{
+          container,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          animationData: {data}
+        }});
+        </script>
+        """,
+        height=height,
+    )
+    return ""
 
 
 def md_to_html(text):
@@ -135,10 +174,39 @@ def md_to_html(text):
     return "".join(output)
 
 
+def plain_text(text):
+    clean = re.sub(r"\*\*(.*?)\*\*", r"\1", text or "")
+    clean = re.sub(r"\*(.*?)\*", r"\1", clean)
+    clean = re.sub(r"^[-\d.\s]+", "", clean, flags=re.MULTILINE)
+    clean = re.sub(r"\s+", " ", clean).strip()
+    return clean
+
+
+def animated_words(text):
+    words = plain_text(text).split()
+    spans = []
+    for idx, word in enumerate(words[:180]):
+        spans.append(f'<span style="animation-delay:{idx * 0.035:.3f}s">{html.escape(word)} </span>')
+    return '<p class="hb-word-stream">' + ''.join(spans) + '</p>'
+
+
+def warm_response(raw):
+    text = raw.strip()
+    emergency = "PERINGATAN GEJALA KRITIS" in text or "mode peringatan darurat" in text.lower()
+    if emergency:
+        return text
+    if text.startswith("Halo"):
+        return text
+    return (
+        "Baik, saya bantu rangkum dengan tenang. Informasi berikut bersifat edukatif dan tidak menggantikan pemeriksaan tenaga medis.\n\n"
+        f"{text}\n\n"
+        "Jika keluhan terasa memburuk, berlangsung beberapa hari, atau disertai tanda bahaya, sebaiknya segera periksa ke fasilitas kesehatan terdekat."
+    )
+
+
 def run_prompt(prompt):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.session_state.bot.step(prompt)
-    st.session_state.messages.append({"role": "assistant", "content": st.session_state.bot.get_response()})
+    st.session_state.pending_prompt = prompt
     st.session_state.tip_index += 1
     st.rerun()
 
@@ -205,6 +273,8 @@ def render_home():
         unsafe_allow_html=True,
     )
 
+    lottie_html("landingpageanim.json", "hb-landing-lottie", height=260)
+
     c1, c2, c3 = st.columns([1.15, 0.85, 1], gap="medium")
     cards = [
         (c1, "message-circle", "Mulai konsultasi", "Ceritakan keluhan seperti demam, batuk, mual, pusing, atau gejala ringan lain.", "Buka chatbot", "CHAT", "home_chat"),
@@ -248,22 +318,48 @@ def state_label():
 
 def render_chat_messages():
     html_messages = []
-    for msg in st.session_state.messages:
+    for idx, msg in enumerate(st.session_state.messages):
         role = msg["role"]
         label = "Anda" if role == "user" else "HealthBuddy"
         avatar_icon = "user-round" if role == "user" else "cross"
+        is_latest_assistant = role == "assistant" and idx == len(st.session_state.messages) - 1 and msg.get("animate")
+        body = animated_words(msg["content"]) if is_latest_assistant else md_to_html(msg["content"])
         html_messages.append(
             f"""
             <div class="hb-chat-row hb-chat-{role}">
                 <div class="hb-chat-avatar">{icon(avatar_icon, 17)}</div>
                 <div class="hb-chat-bubble">
                     <div class="hb-chat-name">{label}</div>
-                    <div class="hb-chat-body">{md_to_html(msg['content'])}</div>
+                    <div class="hb-chat-body">{body}</div>
+                </div>
+            </div>
+            """
+        )
+    if st.session_state.pending_prompt:
+        html_messages.append(
+            f"""
+            <div class="hb-chat-row hb-chat-assistant hb-thinking-row">
+                <div class="hb-chat-avatar">{icon('cross', 17)}</div>
+                <div class="hb-chat-bubble hb-thinking-bubble">
+                    <div class="hb-chat-name">HealthBuddy sedang membaca keluhan</div>
+                    <div class="hb-thinking-dots"><span></span><span></span><span></span></div>
                 </div>
             </div>
             """
         )
     st.markdown('<div class="hb-chat-window">' + "".join(html_messages) + "</div>", unsafe_allow_html=True)
+
+
+def complete_pending_reply():
+    prompt = st.session_state.get("pending_prompt")
+    if not prompt:
+        return
+    time.sleep(0.75)
+    st.session_state.bot.step(prompt)
+    reply = warm_response(st.session_state.bot.get_response())
+    st.session_state.messages.append({"role": "assistant", "content": reply, "animate": True})
+    st.session_state.pending_prompt = None
+    st.rerun()
 
 
 def render_chat():
@@ -280,6 +376,7 @@ def render_chat():
             unsafe_allow_html=True,
         )
         render_chat_messages()
+        complete_pending_reply()
         prompt = st.chat_input("Tulis keluhan atau pertanyaan kesehatan Anda")
         if prompt:
             run_prompt(prompt)
@@ -298,6 +395,8 @@ def render_chat():
         render_hospital_lookup()
 
     with right:
+        lottie_html("boticonanim.json", "hb-bot-lottie", height=170)
+        lottie_html("usericonanim.json", "hb-user-lottie", height=120)
         st.markdown(
             f"""
             <aside class="hb-aside-card hb-warning-card">
@@ -384,13 +483,13 @@ def render_knowledge():
 def render_disease_grid(query):
     filtered = []
     for key, info in DISEASES.items():
-        haystack = " ".join([key, info["nama"], info["kategori"], info.get("definisi", "")]).lower()
+        haystack = " ".join([str(key), str(info["nama"]), str(info["kategori"]), str(info.get("definisi") or "")]).lower()
         if not query or query in haystack:
             filtered.append((key, info))
     cols = st.columns(2, gap="medium")
     for idx, (_, info) in enumerate(filtered[:24]):
         with cols[idx % 2]:
-            category = CATEGORIES.get(info["kategori"], info["kategori"])
+            category = str(CATEGORIES.get(info["kategori"], info["kategori"]))
             st.markdown(
                 f"""
                 <article class="hb-data-card">

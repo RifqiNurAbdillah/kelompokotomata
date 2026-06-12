@@ -60,6 +60,22 @@ body,
   background-size: auto, 28px 28px, 28px 28px, auto;
 }
 
+.stMarkdown,
+.stText,
+div[data-testid="stMarkdownContainer"] {
+  color: var(--fg) !important;
+}
+
+iframe {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.hb-icon {
+  display: block;
+  flex: 0 0 auto;
+}
+
 #MainMenu,
 footer,
 header[data-testid="stHeader"],
@@ -528,6 +544,51 @@ label {
 .hb-chat-body em { color: var(--accent-deep); }
 .hb-chat-user .hb-chat-body em { color: var(--accent); }
 
+.hb-word-stream {
+  margin: 0 !important;
+}
+
+.hb-word-stream span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(5px);
+  animation: hb-word-in 260ms ease forwards;
+}
+
+@keyframes hb-word-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hb-thinking-bubble {
+  min-width: 220px;
+}
+
+.hb-thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+}
+
+.hb-thinking-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: hb-thinking 1s ease-in-out infinite;
+}
+
+.hb-thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.hb-thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes hb-thinking {
+  0%, 80%, 100% { opacity: 0.32; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-4px); }
+}
+
 @keyframes hb-message-in {
   from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
@@ -726,6 +787,25 @@ div[data-testid="stChatInput"] textarea:focus {
 .hb-hospital-list small {
   color: var(--muted);
   line-height: 1.5;
+}
+
+.hb-landing-lottie,
+.hb-bot-lottie,
+.hb-user-lottie,
+.hb-lottie-missing {
+  width: 100%;
+  min-height: 160px;
+  border-radius: 28px;
+  background: var(--surface-2);
+}
+
+.hb-bot-lottie {
+  margin-bottom: 14px;
+}
+
+.hb-user-lottie {
+  margin-bottom: 14px;
+  min-height: 120px;
 }
 
 [data-testid="stTabs"] button {
