@@ -317,37 +317,100 @@ def state_label():
 
 
 def render_chat_messages():
+    bot_anim = (Path(__file__).parent / "assets" / "animation" / "boticonanim.json").read_text(encoding="utf-8")
+    user_anim = (Path(__file__).parent / "assets" / "animation" / "usericonanim.json").read_text(encoding="utf-8")
     html_messages = []
     for idx, msg in enumerate(st.session_state.messages):
         role = msg["role"]
         label = "Anda" if role == "user" else "HealthBuddy"
-        avatar_icon = "user-round" if role == "user" else "cross"
+        avatar_id = f"avatar_{idx}_{role}"
         is_latest_assistant = role == "assistant" and idx == len(st.session_state.messages) - 1 and msg.get("animate")
         body = animated_words(msg["content"]) if is_latest_assistant else md_to_html(msg["content"])
         html_messages.append(
-            f"""
-            <div class="hb-chat-row hb-chat-{role}">
-                <div class="hb-chat-avatar">{icon(avatar_icon, 17)}</div>
-                <div class="hb-chat-bubble">
-                    <div class="hb-chat-name">{label}</div>
-                    <div class="hb-chat-body">{body}</div>
-                </div>
-            </div>
-            """
+            f'<div class="hb-chat-row hb-chat-{role}" data-avatar="{avatar_id}" data-role="{role}">'
+            f'<div class="hb-chat-avatar" id="{avatar_id}"></div>'
+            f'<div class="hb-chat-bubble"><div class="hb-chat-name">{label}</div><div class="hb-chat-body">{body}</div></div>'
+            f'</div>'
         )
     if st.session_state.pending_prompt:
+        thinking_id = "avatar_thinking"
         html_messages.append(
-            f"""
-            <div class="hb-chat-row hb-chat-assistant hb-thinking-row">
-                <div class="hb-chat-avatar">{icon('cross', 17)}</div>
-                <div class="hb-chat-bubble hb-thinking-bubble">
-                    <div class="hb-chat-name">HealthBuddy sedang membaca keluhan</div>
-                    <div class="hb-thinking-dots"><span></span><span></span><span></span></div>
-                </div>
-            </div>
-            """
+            f'<div class="hb-chat-row hb-chat-assistant hb-thinking-row" data-avatar="{thinking_id}" data-role="assistant">'
+            f'<div class="hb-chat-avatar" id="{thinking_id}"></div>'
+            f'<div class="hb-chat-bubble hb-thinking-bubble"><div class="hb-chat-name">HealthBuddy sedang membaca keluhan</div>'
+            f'<div class="hb-thinking-dots"><span></span><span></span><span></span></div></div></div>'
         )
-    st.markdown('<div class="hb-chat-window">' + "".join(html_messages) + "</div>", unsafe_allow_html=True)
+    theme = st.session_state.theme
+    colors = {
+        "light": {
+            "bg": "#f4f1ec", "surface": "#fffdfa", "surface2": "#f9f6ef", "fg": "#0f1b1e",
+            "fgSoft": "#2c3a3e", "muted": "#687173", "border": "#d7d0c5", "accent": "#00a884",
+            "accentDeep": "#0f6b5a", "accentSoft": "#d8f0e9"
+        },
+        "dark": {
+            "bg": "#081214", "surface": "#132123", "surface2": "#182a2d", "fg": "#f3eee4",
+            "fgSoft": "#d6d0c5", "muted": "#979b98", "border": "#26383c", "accent": "#2cd4ad",
+            "accentDeep": "#8ee9cf", "accentSoft": "#123a33"
+        },
+    }[theme]
+    height = min(640, max(430, len(st.session_state.messages) * 118 + 130))
+    rows = "".join(html_messages)
+    components.html(
+        f"""
+        <!doctype html>
+        <html>
+        <head>
+        <meta charset="utf-8" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+        <style>
+        * {{ box-sizing: border-box; }}
+        body {{ margin: 0; font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; background: transparent; color: {colors['fg']}; }}
+        .hb-chat-window {{ height: {height}px; overflow-y: auto; padding: 18px; border: 1px solid {colors['border']}; border-radius: 28px 10px 28px 28px; background: linear-gradient(180deg, {colors['surface']} 0%, {colors['surface2']} 100%); scroll-behavior: smooth; }}
+        .hb-chat-row {{ display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; animation: rowIn 360ms ease both; }}
+        .hb-chat-user {{ flex-direction: row-reverse; }}
+        .hb-chat-avatar {{ width: 46px; height: 46px; flex: 0 0 46px; border-radius: 999px; overflow: hidden; border: 1px solid {colors['accent']}; background: {colors['accentSoft']}; }}
+        .hb-chat-user .hb-chat-avatar {{ border-color: {colors['fg']}; background: {colors['fg']}; }}
+        .hb-chat-bubble {{ max-width: min(78%, 760px); width: fit-content; padding: 14px 16px; border: 1px solid {colors['border']}; border-radius: 4px 18px 18px 18px; background: {colors['surface']}; color: {colors['fg']}; }}
+        .hb-chat-user .hb-chat-bubble {{ border-color: {colors['fg']}; border-radius: 18px 4px 18px 18px; background: {colors['fg']}; color: {colors['surface']}; }}
+        .hb-chat-name {{ margin-bottom: 8px; font: 700 10px/1 JetBrains Mono, monospace; letter-spacing: .14em; text-transform: uppercase; color: {colors['accentDeep']}; }}
+        .hb-chat-user .hb-chat-name {{ color: rgba(255,255,255,.68); }}
+        .hb-chat-body p {{ margin: 0 0 8px; line-height: 1.62; font-size: 14px; }}
+        .hb-chat-body p:last-child {{ margin-bottom: 0; }}
+        .hb-chat-body ul, .hb-chat-body ol {{ margin: 8px 0 10px; padding-left: 20px; }}
+        .hb-chat-body li {{ margin-bottom: 5px; line-height: 1.55; }}
+        .hb-chat-body em {{ color: {colors['accentDeep']}; }}
+        .hb-chat-user .hb-chat-body em {{ color: {colors['accent']}; }}
+        .hb-word-stream span {{ display: inline-block; opacity: 0; transform: translateY(5px); animation: wordIn 260ms ease forwards; }}
+        .hb-thinking-dots {{ display: inline-flex; align-items: center; gap: 6px; height: 22px; }}
+        .hb-thinking-dots span {{ width: 8px; height: 8px; border-radius: 999px; background: {colors['accent']}; animation: thinking 1s ease-in-out infinite; }}
+        .hb-thinking-dots span:nth-child(2) {{ animation-delay: .15s; }}
+        .hb-thinking-dots span:nth-child(3) {{ animation-delay: .3s; }}
+        @keyframes rowIn {{ from {{ opacity: 0; transform: translateY(10px); filter: blur(2px); }} to {{ opacity: 1; transform: translateY(0); filter: blur(0); }} }}
+        @keyframes wordIn {{ to {{ opacity: 1; transform: translateY(0); }} }}
+        @keyframes thinking {{ 0%, 80%, 100% {{ opacity: .32; transform: translateY(0); }} 40% {{ opacity: 1; transform: translateY(-4px); }} }}
+        </style>
+        </head>
+        <body>
+        <main class="hb-chat-window" id="chatWindow">{rows}</main>
+        <script>
+        const botAnim = {bot_anim};
+        const userAnim = {user_anim};
+        document.querySelectorAll('.hb-chat-row').forEach((row) => {{
+          const avatar = row.querySelector('.hb-chat-avatar');
+          const data = row.dataset.role === 'user' ? userAnim : botAnim;
+          if (avatar && window.lottie) {{
+            lottie.loadAnimation({{ container: avatar, renderer: 'svg', loop: true, autoplay: true, animationData: data }});
+          }}
+        }});
+        const chat = document.getElementById('chatWindow');
+        chat.scrollTop = chat.scrollHeight;
+        </script>
+        </body>
+        </html>
+        """,
+        height=height + 4,
+        scrolling=False,
+    )
 
 
 def complete_pending_reply():

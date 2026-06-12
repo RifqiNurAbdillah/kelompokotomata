@@ -659,12 +659,38 @@ div[data-testid="stChatInput"] {
   margin-top: 12px;
 }
 
-div[data-testid="stChatInput"] textarea {
+div[data-testid="stChatInput"],
+div[data-testid="stChatInput"] > div,
+div[data-testid="stChatInput"] div,
+div[data-testid="stChatInput"] section {
+  background: transparent !important;
+}
+
+div[data-testid="stChatInput"] div[data-baseweb="textarea"],
+div[data-testid="stChatInput"] div[data-baseweb="base-input"] {
+  background: var(--surface) !important;
   border-radius: 999px !important;
   border: 1px solid var(--border) !important;
+  box-shadow: 0 12px 34px rgba(15, 27, 30, 0.08) !important;
+}
+
+div[data-testid="stChatInput"] textarea {
+  border-radius: 999px !important;
+  border: 0 !important;
   background: var(--surface) !important;
   color: var(--fg) !important;
   font-family: "Inter", sans-serif !important;
+  caret-color: var(--accent) !important;
+}
+
+div[data-testid="stChatInput"] textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+div[data-testid="stChatInput"] button {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
 }
 
 div[data-testid="stChatInput"] textarea:focus {
