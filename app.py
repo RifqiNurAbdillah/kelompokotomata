@@ -134,7 +134,28 @@ def lottie_html(file_name, class_name, height=240):
     return ""
 
 
-def md_to_html(text):
+def char_delay_for(text):
+    length = len(text or "")
+    if length <= 180:
+        return 0.034
+    if length <= 520:
+        return 0.017
+    return 0.0085
+
+
+def char_spans(text, start_index=0, delay=0.02):
+    spans = []
+    cursor = start_index
+    for char in text:
+        safe_char = "&nbsp;" if char == " " else html.escape(char)
+        spans.append(f'<span class="tw-char" style="animation-delay:{cursor * delay:.3f}s">{safe_char}</span>')
+        cursor += 1
+    return "".join(spans), cursor
+
+
+def md_to_html(text, animate=False):
+    if animate:
+        return md_to_typewriter_html(text)
     safe = html.escape(text or "")
     safe = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", safe)
     safe = re.sub(r"\*(.*?)\*", r"<em>\1</em>", safe)
@@ -179,6 +200,60 @@ def md_to_html(text):
     return "".join(output)
 
 
+def clean_inline_markdown(text):
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text or "")
+    text = re.sub(r"\*(.*?)\*", r"\1", text)
+    return text
+
+
+def md_to_typewriter_html(text):
+    raw = text or ""
+    delay = char_delay_for(raw)
+    lines = raw.splitlines()
+    output = []
+    in_ul = False
+    in_ol = False
+    cursor = 0
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            if in_ul:
+                output.append("</ul>")
+                in_ul = False
+            if in_ol:
+                output.append("</ol>")
+                in_ol = False
+            continue
+        if stripped.startswith("- "):
+            if not in_ul:
+                output.append("<ul>")
+                in_ul = True
+            content, cursor = char_spans(clean_inline_markdown(stripped[2:]), cursor, delay)
+            output.append(f"<li>{content}</li>")
+            continue
+        if re.match(r"^\d+\.\s", stripped):
+            if not in_ol:
+                output.append("<ol>")
+                in_ol = True
+            item_text = clean_inline_markdown(re.sub(r"^\d+\.\s", "", stripped))
+            content, cursor = char_spans(item_text, cursor, delay)
+            output.append(f"<li>{content}</li>")
+            continue
+        if in_ul:
+            output.append("</ul>")
+            in_ul = False
+        if in_ol:
+            output.append("</ol>")
+            in_ol = False
+        content, cursor = char_spans(clean_inline_markdown(stripped), cursor, delay)
+        output.append(f"<p>{content}</p>")
+    if in_ul:
+        output.append("</ul>")
+    if in_ol:
+        output.append("</ol>")
+    return "".join(output)
+
+
 def plain_text(text):
     clean = re.sub(r"\*\*(.*?)\*\*", r"\1", text or "")
     clean = re.sub(r"\*(.*?)\*", r"\1", clean)
@@ -188,11 +263,7 @@ def plain_text(text):
 
 
 def animated_words(text):
-    words = plain_text(text).split()
-    spans = []
-    for idx, word in enumerate(words[:180]):
-        spans.append(f'<span style="animation-delay:{idx * 0.075:.3f}s">{html.escape(word)} </span>')
-    return '<p class="hb-word-stream">' + ''.join(spans) + '</p>'
+    return md_to_typewriter_html(text)
 
 
 def warm_response(raw):
@@ -280,6 +351,26 @@ def render_home():
         unsafe_allow_html=True,
     )
 
+    anim_col, copy_col = st.columns([0.82, 1.18], gap="medium")
+    with anim_col:
+        lottie_html("landingpageanim.json", "hb-landing-lottie", height=300)
+    with copy_col:
+        st.markdown(
+            f"""
+            <section class="hb-card hb-landing-note">
+                <span class="hb-kicker">Cara kerja singkat</span>
+                <h3>HealthBuddy membantu pengguna memahami konteks keluhan sebelum mengambil langkah berikutnya.</h3>
+                <p>Sistem membaca kata kunci gejala, mengenali red flag, lalu mengarahkan percakapan ke saran edukatif, glosarium, FAQ, atau panduan P3K. Setiap respons tetap dibuat konservatif agar tidak menggantikan pemeriksaan medis.</p>
+                <div class="hb-hero-actions">
+                    <span>{icon('message-circle', 17)} Percakapan terarah</span>
+                    <span>{icon('shield-plus', 17)} Red flag prioritas</span>
+                    <span>{icon('book-open', 17)} Materi mudah ditelusuri</span>
+                </div>
+            </section>
+            """,
+            unsafe_allow_html=True,
+        )
+
     c1, c2, c3 = st.columns([1.15, 0.85, 1], gap="medium")
     cards = [
         (c1, "message-circle", "Mulai konsultasi", "Ceritakan keluhan seperti demam, batuk, mual, pusing, atau gejala ringan lain.", "Buka chatbot", "CHAT", "home_chat"),
@@ -343,8 +434,8 @@ def render_chat_messages():
         html_messages.append(
             f'<div class="hb-chat-row hb-chat-assistant hb-thinking-row" data-avatar="{thinking_id}" data-role="assistant">'
             f'<div class="hb-chat-avatar" id="{thinking_id}"></div>'
-            f'<div class="hb-chat-bubble hb-thinking-bubble"><div class="hb-chat-name">Thinking for {duration:.1f}s</div>'
-            f'<div class="hb-thinking-dots"><span></span><span></span><span></span></div></div></div>'
+            f'<div class="hb-chat-bubble hb-thinking-bubble"><div class="hb-chat-name">Thinking <span id="thinkingCounter">1</span> / {int(round(duration))}s</div>'
+            f'<div class="hb-thinking-line"><span class="hb-thinking-cycle"></span><div class="hb-thinking-dots"><span></span><span></span><span></span></div></div></div></div>'
         )
     theme = st.session_state.theme
     colors = {
@@ -386,14 +477,17 @@ def render_chat_messages():
         .hb-chat-body li {{ margin-bottom: 5px; line-height: 1.55; }}
         .hb-chat-body em {{ color: {colors['accentDeep']}; }}
         .hb-chat-user .hb-chat-body em {{ color: {colors['accent']}; }}
-        .hb-word-stream span {{ display: inline-block; opacity: 0; transform: translateY(5px); animation: wordIn 260ms ease forwards; }}
+        .tw-char {{ display: inline; opacity: 0; animation: charIn 120ms ease forwards; white-space: pre-wrap; }}
         .hb-thinking-dots {{ display: inline-flex; align-items: center; gap: 6px; height: 22px; }}
         .hb-thinking-dots span {{ width: 8px; height: 8px; border-radius: 999px; background: {colors['accent']}; animation: thinking 1s ease-in-out infinite; }}
         .hb-thinking-dots span:nth-child(2) {{ animation-delay: .15s; }}
         .hb-thinking-dots span:nth-child(3) {{ animation-delay: .3s; }}
+        .hb-thinking-line {{ display: flex; align-items: center; gap: 12px; }}
+        .hb-thinking-cycle {{ width: 18px; height: 18px; border-radius: 999px; border: 2px solid {colors['accentSoft']}; border-top-color: {colors['accent']}; animation: spin .72s linear infinite; }}
         @keyframes rowIn {{ from {{ opacity: 0; transform: translateY(10px); filter: blur(2px); }} to {{ opacity: 1; transform: translateY(0); filter: blur(0); }} }}
-        @keyframes wordIn {{ to {{ opacity: 1; transform: translateY(0); }} }}
+        @keyframes charIn {{ to {{ opacity: 1; }} }}
         @keyframes thinking {{ 0%, 80%, 100% {{ opacity: .32; transform: translateY(0); }} 40% {{ opacity: 1; transform: translateY(-4px); }} }}
+        @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
         </style>
         </head>
         <body>
@@ -410,6 +504,12 @@ def render_chat_messages():
         }});
         const chat = document.getElementById('chatWindow');
         chat.scrollTop = chat.scrollHeight;
+        const counter = document.getElementById('thinkingCounter');
+        if (counter) {{
+          let sec = 1;
+          const max = {int(round(st.session_state.get('thinking_duration') or 1))};
+          setInterval(() => {{ sec = Math.min(sec + 1, max); counter.textContent = sec; }}, 1000);
+        }}
         </script>
         </body>
         </html>
