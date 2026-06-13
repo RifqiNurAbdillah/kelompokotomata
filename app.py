@@ -498,12 +498,12 @@ def render_header():
 def render_background_particles():
     items = []
     shapes = ["cross", "pill", "dot", "capsule", "plus", "ring"]
-    for idx in range(24):
+    for idx in range(42):
         shape = shapes[idx % len(shapes)]
-        left = (idx * 17 + 9) % 100
-        top = (idx * 23 + 7) % 100
+        left = (idx * 13 + 9) % 100
+        top = (idx * 19 + 7) % 100
         delay = (idx % 9) * -1.7
-        duration = 16 + (idx % 7) * 3
+        duration = 14 + (idx % 8) * 2.7
         items.append(f'<span class="hb-particle hb-particle-{shape}" style="left:{left}%;top:{top}%;animation-delay:{delay}s;animation-duration:{duration}s"></span>')
     st.markdown('<div class="hb-particles" aria-hidden="true">' + ''.join(items) + '</div>', unsafe_allow_html=True)
 
