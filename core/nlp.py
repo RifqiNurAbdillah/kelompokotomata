@@ -269,10 +269,10 @@ class NLPEngine:
 
     def find_disease(self, raw_text):
         normalized = self.normalize(raw_text)
-        for stemmed_key, original in self.disease_aliases.items():
+        for stemmed_key, original in sorted(self.disease_aliases.items(), key=lambda item: len(item[0]), reverse=True):
             if stemmed_key and stemmed_key in normalized:
                 return original
-        for stemmed_key, original in self.disease_aliases.items():
+        for stemmed_key, original in sorted(self.disease_aliases.items(), key=lambda item: len(item[0]), reverse=True):
             if not stemmed_key:
                 continue
             if fuzz.partial_ratio(stemmed_key, normalized) >= 90:
