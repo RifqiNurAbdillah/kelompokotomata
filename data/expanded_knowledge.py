@@ -84,6 +84,10 @@ EXPANDED_SYMPTOM_RULES = [
     {"phrase": 'sariawan', "disease": 'sariawan', "weight": 5.0},
     {"phrase": 'luka mulut', "disease": 'sariawan', "weight": 5.0},
     {"phrase": 'mulut pedih', "disease": 'sariawan', "weight": 4.5},
+    {"phrase": 'tekanan darah saya tinggi', "disease": 'hipertensi', "weight": 10.0},
+    {"phrase": 'tensi saya tinggi', "disease": 'hipertensi', "weight": 10.0},
+    {"phrase": 'tekanan darah tinggi', "disease": 'hipertensi', "weight": 8.0},
+    {"phrase": 'darah tinggi', "disease": 'hipertensi', "weight": 8.0},
 ]
 
 TYPO_ALIASES = {

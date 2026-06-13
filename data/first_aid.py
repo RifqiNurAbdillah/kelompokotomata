@@ -3,7 +3,7 @@
 FIRST_AID = {
     "luka sayat": {
         "judul": "Luka Sayat / Lecet Ringan",
-        "kata_kunci": ["berdarah", "luka berdarah", "lecet", "kaki berdarah", "jatuh", "tergores", "tersayat", "luka"],
+        "kata_kunci": ["luka berdarah", "lecet", "kaki berdarah", "jatuh", "tergores", "tersayat", "luka"],
         "langkah": [
             "Cuci tangan terlebih dahulu sebelum menangani luka.",
             "Bersihkan luka dengan air mengalir bersih selama 1-2 menit.",

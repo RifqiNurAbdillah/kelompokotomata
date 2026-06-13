@@ -282,23 +282,32 @@ class NLPEngine:
         return None
 
     def find_definition(self, raw_text):
-        normalized = self.normalize(raw_text)
-        # cari yang paling panjang dulu biar "tekanan darah" menang dari "darah"
-        candidates = sorted(self.definition_index.keys(), key=len, reverse=True)
-        for stemmed_key in candidates:
-            if stemmed_key and stemmed_key in normalized:
-                return self.definition_index[stemmed_key]
-        # fuzzy fallback
-        best = (None, 0)
-        for stemmed_key, original in self.definition_index.items():
-            if len(stemmed_key) < 4:
-                continue
-            score = fuzz.partial_ratio(stemmed_key, normalized)
-            if score > best[1]:
-                best = (original, score)
-        if best[1] >= 88:
-            return best[0]
-        return None
+            normalized = self.normalize(raw_text)
+            raw_lower = raw_text.lower()
+            
+            # Tambahkan guard/pelindung: Jangan berikan definisi jika teks mengandung kata keluhan
+            # seperti "tinggi", "rendah", "naik", "turun", atau "sakit"
+            indikator_keluhan = ["tinggi", "rendah", "naik", "turun", "kumat", "sakit"]
+            if any(kata in raw_lower for kata in indikator_keluhan):
+                return None # Paksa return None agar dialihkan ke scoring penyakit (TRIAGE)
+
+            # Cari yang paling panjang dulu biar "tekanan darah" menang dari "darah"
+            candidates = sorted(self.definition_index.keys(), key=len, reverse=True)
+            for stemmed_key in candidates:
+                if stemmed_key and stemmed_key in normalized:
+                    return self.definition_index[stemmed_key]
+            
+            # Fuzzy fallback
+            best = (None, 0)
+            for stemmed_key, original in self.definition_index.items():
+                if len(stemmed_key) < 4:
+                    continue
+                score = fuzz.partial_ratio(stemmed_key, normalized)
+                if score > best[1]:
+                    best = (original, score)
+            if best[1] >= 88:
+                return best[0]
+            return None
 
     def find_first_aid(self, raw_text):
         normalized = self.normalize(raw_text)

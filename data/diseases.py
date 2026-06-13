@@ -5,8 +5,8 @@ DISEASES = {
         "kategori": "infeksi_umum",
         "nama": "Demam",
         "definisi": "Kondisi suhu tubuh di atas 37.5 derajat Celsius, biasanya merupakan respons imun terhadap infeksi.",
-        "gejala_utama": ["demam", "panas", "menggigil", "berkeringat", "lemas"],
-        "gejala_pendukung": ["sakit kepala", "nyeri otot", "tidak nafsu makan"],
+        "gejala_utama": ["demam", "panas", "menggigil", "berkeringat", "lemas", "badan panas", "merentang panas"],
+        "gejala_pendukung": ["sakit kepala", "nyeri otot", "tidak nafsu makan", "badan pegal"],
         "saran": [
             "Istirahat total minimal 8 jam dan kurangi aktivitas berat.",
             "Kompres dahi, leher, dan ketiak dengan air hangat (bukan dingin).",
@@ -20,7 +20,7 @@ DISEASES = {
         "kategori": "pernapasan",
         "nama": "Flu / Influenza",
         "definisi": "Infeksi virus pada saluran pernapasan atas yang umumnya sembuh sendiri dalam 5-7 hari.",
-        "gejala_utama": ["pilek", "bersin", "hidung tersumbat", "batuk", "sakit tenggorokan"],
+        "gejala_utama": ["pilek", "bersin", "hidung tersumbat", "batuk", "sakit tenggorokan", "flu", "influenza", "bersin-bersin", "mampet"],
         "gejala_pendukung": ["demam", "lemas", "sakit kepala", "nyeri otot"],
         "saran": [
             "Istirahat cukup, idealnya tetap di rumah selama 2-3 hari.",
@@ -35,10 +35,10 @@ DISEASES = {
         "kategori": "pernapasan",
         "nama": "Batuk",
         "definisi": "Refleks alami untuk membersihkan saluran napas dari iritan, lendir, atau benda asing.",
-        "gejala_utama": ["batuk", "dahak", "tenggorokan gatal", "tenggorokan kering"],
+        "gejala_utama": ["batuk", "dahak", "tenggorokan gatal", "tenggorokan kering", "batuk berdahak", "batuk kering"],
         "gejala_pendukung": ["pilek", "demam ringan", "suara serak"],
         "saran": [
-            "Minum air hangat dengan perasan lemon dan madu (bukan untuk anak di bawah 1 tahun).",
+            "Minum air hangat dengan perasan lemon and madu (bukan untuk anak di bawah 1 tahun).",
             "Hindari makanan gorengan, pedas, dan minuman dingin.",
             "Jaga kelembapan udara dengan humidifier atau handuk basah di kamar.",
             "Hindari asap rokok dan polusi.",
@@ -50,8 +50,8 @@ DISEASES = {
         "kategori": "pencernaan",
         "nama": "Maag / Dispepsia",
         "definisi": "Kumpulan gejala tidak nyaman di ulu hati akibat peningkatan asam lambung atau iritasi lambung.",
-        "gejala_utama": ["perut perih", "ulu hati", "mual", "kembung", "begah"],
-        "gejala_pendukung": ["sendawa", "asam lambung naik", "mulut pahit"],
+        "gejala_utama": ["perut perih", "ulu hati", "mual", "kembung", "begah", "sakit perut", "maag", "lambung perih", "perih lambung"],
+        "gejala_pendukung": ["sendawa", "asam lambung naik", "mulut pahit", "sering sendawa"],
         "saran": [
             "Makan dengan porsi kecil tapi sering, jangan menunggu lapar berat.",
             "Hindari makanan pedas, asam, gorengan, kopi, dan soda.",
@@ -65,7 +65,7 @@ DISEASES = {
         "kategori": "pencernaan",
         "nama": "Diare",
         "definisi": "Buang air besar lebih dari 3 kali sehari dengan tekstur cair, biasanya akibat infeksi atau intoleransi makanan.",
-        "gejala_utama": ["diare", "mencret", "BAB cair", "perut mulas"],
+        "gejala_utama": ["diare", "mencret", "BAB cair", "perut mulas", "buang air besar cair", "sering bab"],
         "gejala_pendukung": ["mual", "demam ringan", "lemas", "kram perut"],
         "saran": [
             "Minum oralit atau larutan gula garam untuk mencegah dehidrasi.",
@@ -80,7 +80,7 @@ DISEASES = {
         "kategori": "pencernaan",
         "nama": "Sembelit / Konstipasi",
         "definisi": "Kesulitan buang air besar dengan frekuensi kurang dari 3 kali seminggu dan feses keras.",
-        "gejala_utama": ["sembelit", "susah BAB", "feses keras", "perut penuh"],
+        "gejala_utama": ["sembelit", "susah BAB", "feses keras", "perut penuh", "konstipasi", "tidak bisa bab", "bab keras"],
         "gejala_pendukung": ["kembung", "begah", "tidak nafsu makan"],
         "saran": [
             "Perbanyak konsumsi serat: sayur, buah (pepaya, pir), oat, biji chia.",
@@ -95,7 +95,7 @@ DISEASES = {
         "kategori": "neurologis",
         "nama": "Sakit Kepala / Sefalgia",
         "definisi": "Nyeri pada kepala atau leher bagian atas, bisa karena tegang, migrain, sinus, atau dehidrasi.",
-        "gejala_utama": ["sakit kepala", "pusing", "kepala berat", "nyeri kepala"],
+        "gejala_utama": ["sakit kepala", "pusing", "kepala berat", "nyeri kepala", "puyeng", "cekot-cekot"],
         "gejala_pendukung": ["mual", "sensitif cahaya", "leher tegang"],
         "saran": [
             "Istirahat di ruangan gelap dan tenang selama 30-60 menit.",
@@ -110,7 +110,7 @@ DISEASES = {
         "kategori": "neurologis",
         "nama": "Migrain",
         "definisi": "Sakit kepala berdenyut, biasanya satu sisi, sering disertai mual dan sensitif terhadap cahaya/suara.",
-        "gejala_utama": ["migrain", "kepala berdenyut", "nyeri sebelah"],
+        "gejala_utama": ["migrain", "kepala berdenyut", "nyeri sebelah", "sakit kepala sebelah", "pusing sebelah"],
         "gejala_pendukung": ["mual", "muntah", "sensitif cahaya", "sensitif suara"],
         "saran": [
             "Istirahat di ruangan gelap dan sunyi.",
@@ -125,7 +125,7 @@ DISEASES = {
         "kategori": "neurologis",
         "nama": "Vertigo",
         "definisi": "Sensasi berputar atau lingkungan berputar, sering akibat gangguan pada telinga dalam.",
-        "gejala_utama": ["vertigo", "berputar", "limbung", "oleng"],
+        "gejala_utama": ["vertigo", "berputar", "limbung", "oleng", "kepala berputar", "pusing berputar"],
         "gejala_pendukung": ["mual", "muntah", "telinga berdengung", "keringat dingin"],
         "saran": [
             "Duduk atau berbaring saat serangan datang, jangan menyetir.",
@@ -140,7 +140,7 @@ DISEASES = {
         "kategori": "imunologi",
         "nama": "Alergi",
         "definisi": "Reaksi berlebihan sistem imun terhadap zat tertentu (alergen) yang sebenarnya tidak berbahaya.",
-        "gejala_utama": ["gatal", "ruam", "bentol", "bersin", "mata berair"],
+        "gejala_utama": ["gatal", "ruam", "bentol", "bersin", "mata berair", "alergi", "biduran ringan", "gatal-gatal"],
         "gejala_pendukung": ["hidung tersumbat", "kulit kemerahan", "bibir bengkak ringan"],
         "saran": [
             "Identifikasi dan hindari alergen pemicu (debu, makanan, serbuk).",
@@ -155,7 +155,7 @@ DISEASES = {
         "kategori": "pernapasan",
         "nama": "Asma",
         "definisi": "Penyakit kronis pada saluran napas yang menyebabkan penyempitan dan peradangan.",
-        "gejala_utama": ["sesak napas ringan", "mengi", "dada sesak", "batuk malam"],
+        "gejala_utama": ["sesak napas ringan", "mengi", "dada sesak", "batuk malam", "asma", "bengek", "nafas bunyi", "sesak nafas"],
         "gejala_pendukung": ["batuk kering", "sulit tidur karena batuk"],
         "saran": [
             "Hindari pemicu: debu, asap, udara dingin, bulu hewan.",
@@ -170,8 +170,8 @@ DISEASES = {
         "kategori": "kardiovaskular",
         "nama": "Hipertensi / Tekanan Darah Tinggi",
         "definisi": "Tekanan darah konsisten di atas 140/90 mmHg yang dapat meningkatkan risiko stroke dan jantung.",
-        "gejala_utama": ["tekanan darah tinggi", "tengkuk berat", "pusing"],
-        "gejala_pendukung": ["mudah lelah", "telinga berdengung", "mimisan ringan"],
+        "gejala_utama": ["tekanan darah tinggi", "tengkuk berat", "pusing", "darah tinggi", "hipertensi", "tensi tinggi", "tekanan darah", "tensi naik"],
+        "gejala_pendukung": ["mudah lelah", "telinga berdengung", "mimisan ringan", "leher kaku", "pundak berat"],
         "saran": [
             "Kurangi konsumsi garam (di bawah 1 sendok teh per hari).",
             "Olahraga aerobik 30 menit minimal 5 kali seminggu.",
@@ -185,7 +185,7 @@ DISEASES = {
         "kategori": "metabolik",
         "nama": "Diabetes Melitus",
         "definisi": "Penyakit kronis ditandai dengan kadar gula darah tinggi akibat masalah insulin.",
-        "gejala_utama": ["sering haus", "sering kencing", "berat badan turun", "mudah lelah"],
+        "gejala_utama": ["sering haus", "sering kencing", "berat badan turun", "mudah lelah", "diabetes", "gula darah tinggi", "kencing manis", "sering pipis"],
         "gejala_pendukung": ["luka lama sembuh", "pandangan kabur", "kesemutan"],
         "saran": [
             "Batasi gula sederhana, nasi putih, dan tepung olahan.",
@@ -200,8 +200,8 @@ DISEASES = {
         "kategori": "darah",
         "nama": "Anemia",
         "definisi": "Kondisi kekurangan sel darah merah atau hemoglobin sehingga oksigen ke jaringan berkurang.",
-        "gejala_utama": ["lemas", "pucat", "mudah lelah", "pusing"],
-        "gejala_pendukung": ["sesak napas ringan saat aktivitas", "jantung berdebar", "tangan dingin"],
+        "gejala_utama": ["lemas", "pucat", "mudah lelah", "pusing", "anemia", "kurang darah", "muka pucat", "badan lemas"],
+        "gejala_pendukung": ["sesak napas ringan saat aktivitas", "jantung berdebar", "tangan dingin", "kurang sel darah merah"],
         "saran": [
             "Konsumsi makanan kaya zat besi: bayam, hati ayam, daging merah, kacang-kacangan.",
             "Kombinasikan dengan vitamin C untuk penyerapan optimal.",
@@ -215,7 +215,7 @@ DISEASES = {
         "kategori": "mental",
         "nama": "Insomnia",
         "definisi": "Gangguan sulit tidur, sulit mempertahankan tidur, atau bangun terlalu pagi yang berdampak pada aktivitas siang hari.",
-        "gejala_utama": ["susah tidur", "insomnia", "tidak bisa tidur", "sering terbangun"],
+        "gejala_utama": ["susah tidur", "insomnia", "tidak bisa tidur", "sering terbangun", "sulit tidur", "begadang terus"],
         "gejala_pendukung": ["lemas siang hari", "mudah marah", "sulit fokus"],
         "saran": [
             "Tidur dan bangun di jam yang sama setiap hari.",
@@ -230,7 +230,7 @@ DISEASES = {
         "kategori": "mental",
         "nama": "Stres",
         "definisi": "Respons tubuh terhadap tekanan fisik atau psikologis yang dapat berdampak pada kesehatan jika berkepanjangan.",
-        "gejala_utama": ["stres", "cemas", "tegang", "khawatir berlebih"],
+        "gejala_utama": ["stres", "cemas", "tegang", "khawatir berlebih", "depresi ringan", "pikiran penat", "stres pikiran"],
         "gejala_pendukung": ["susah tidur", "sakit kepala", "lelah", "mudah marah"],
         "saran": [
             "Latihan pernapasan dalam 4-7-8 (tarik 4 detik, tahan 7, hembuskan 8).",
@@ -245,7 +245,7 @@ DISEASES = {
         "kategori": "gigi_mulut",
         "nama": "Sakit Gigi",
         "definisi": "Nyeri pada gigi atau jaringan sekitarnya, sering akibat karies, gusi meradang, atau abses.",
-        "gejala_utama": ["sakit gigi", "gigi berdenyut", "ngilu"],
+        "gejala_utama": ["sakit gigi", "gigi berdenyut", "ngilu", "nyeri gigi", "gigi linu"],
         "gejala_pendukung": ["gusi bengkak", "pipi bengkak ringan", "nafas tidak segar"],
         "saran": [
             "Kumur dengan air garam hangat 3-4 kali sehari.",
@@ -260,7 +260,7 @@ DISEASES = {
         "kategori": "gigi_mulut",
         "nama": "Sariawan",
         "definisi": "Luka kecil di mukosa mulut yang biasanya sembuh dalam 1-2 minggu.",
-        "gejala_utama": ["sariawan", "luka mulut", "nyeri saat makan"],
+        "gejala_utama": ["sariawan", "luka mulut", "nyeri saat makan", "bibir pecah luka", "luka di gusi"],
         "gejala_pendukung": ["mulut pedih", "tidak nafsu makan"],
         "saran": [
             "Konsumsi makanan kaya vitamin B, C, dan zat besi.",
@@ -275,8 +275,8 @@ DISEASES = {
         "kategori": "mata",
         "nama": "Konjungtivitis / Mata Merah",
         "definisi": "Peradangan pada selaput bening mata akibat infeksi atau alergi.",
-        "gejala_utama": ["mata merah", "mata gatal", "mata berair", "kotoran mata"],
-        "gejala_pendukung": ["silau", "rasa mengganjal", "kelopak bengkak"],
+        "gejala_utama": ["mata merah", "mata gatal", "mata berair", "kotoran mata", "konjungtivitis", "mata belekan", "belekan"],
+        "gejala_pendukung": ["silau", "rasa mengganjal", "kelopak bengkak", "mata perih"],
         "saran": [
             "Kompres dingin pada mata yang merah.",
             "Hindari mengucek mata, sering cuci tangan.",
@@ -290,7 +290,7 @@ DISEASES = {
         "kategori": "kulit",
         "nama": "Biduran / Urtikaria",
         "definisi": "Bentol merah gatal di kulit akibat reaksi alergi atau pelepasan histamin.",
-        "gejala_utama": ["biduran", "bentol", "gatal", "ruam menonjol"],
+        "gejala_utama": ["biduran", "bentol", "gatal", "ruam menonjol", "urtikaria", "kaligata", "bentol merah gatal"],
         "gejala_pendukung": ["bentol berpindah", "kulit hangat di area ruam"],
         "saran": [
             "Kompres dingin pada area gatal.",
@@ -305,7 +305,7 @@ DISEASES = {
         "kategori": "kulit",
         "nama": "Jerawat",
         "definisi": "Peradangan folikel rambut akibat sumbatan minyak, sel kulit mati, dan bakteri.",
-        "gejala_utama": ["jerawat", "kulit berminyak", "komedo"],
+        "gejala_utama": ["jerawat", "kulit berminyak", "komedo", "muka berjerawat", "jerawatan"],
         "gejala_pendukung": ["bintik merah", "bekas hitam", "kulit terasa kasar"],
         "saran": [
             "Cuci muka 2x sehari dengan pembersih lembut, jangan berlebihan.",
@@ -320,8 +320,8 @@ DISEASES = {
         "kategori": "infeksi_umum",
         "nama": "Demam Berdarah Dengue",
         "definisi": "Infeksi virus dengue yang ditularkan nyamuk Aedes aegypti, dapat menyebabkan komplikasi serius.",
-        "gejala_utama": ["demam tinggi mendadak", "nyeri otot", "nyeri sendi", "ruam"],
-        "gejala_pendukung": ["sakit kepala", "nyeri belakang mata", "mual", "bintik merah"],
+        "gejala_utama": ["demam tinggi mendadak", "nyeri otot", "nyeri sendi", "ruam", "demam berdarah", "dbd", "demam dengue"],
+        "gejala_pendukung": ["sakit kepala", "nyeri belakang mata", "mual", "bintik merah", "bintik merah kulit", "demam terus menerus"],
         "saran": [
             "Istirahat total dan minum banyak cairan (air, oralit, jus).",
             "Pantau suhu tubuh dan kondisi umum.",
@@ -335,8 +335,8 @@ DISEASES = {
         "kategori": "infeksi_umum",
         "nama": "Tifus / Demam Tifoid",
         "definisi": "Infeksi bakteri Salmonella typhi melalui makanan/minuman tercemar.",
-        "gejala_utama": ["demam berkepanjangan", "demam naik bertahap", "lemas", "sakit perut"],
-        "gejala_pendukung": ["sakit kepala", "tidak nafsu makan", "diare atau sembelit"],
+        "gejala_utama": ["demam berkepanjangan", "demam naik bertahap", "lemas", "sakit perut", "tifus", "tapes", "demam tifoid"],
+        "gejala_pendukung": ["sakit kepala", "tidak nafsu makan", "diare atau sembelit", "lidah kotor"],
         "saran": [
             "Istirahat total minimal 1-2 minggu.",
             "Konsumsi makanan lembut dan mudah dicerna: bubur, sup.",
@@ -350,7 +350,7 @@ DISEASES = {
         "kategori": "pernapasan",
         "nama": "COVID-19",
         "definisi": "Penyakit infeksi akibat virus SARS-CoV-2 yang menyerang saluran pernapasan.",
-        "gejala_utama": ["demam", "batuk kering", "lelah", "hilang penciuman", "hilang rasa"],
+        "gejala_utama": ["demam", "batuk kering", "lelah", "hilang penciuman", "hilang rasa", "covid", "corona", "anosmia", "tidak bisa mencium bau"],
         "gejala_pendukung": ["sakit tenggorokan", "sakit kepala", "nyeri otot", "diare"],
         "saran": [
             "Isolasi mandiri minimal 5-7 hari atau sampai negatif.",
@@ -365,8 +365,8 @@ DISEASES = {
         "kategori": "pernapasan",
         "nama": "Radang Tenggorokan / Faringitis",
         "definisi": "Peradangan pada faring akibat infeksi virus, bakteri, atau iritasi.",
-        "gejala_utama": ["sakit tenggorokan", "sulit menelan", "tenggorokan merah", "suara serak"],
-        "gejala_pendukung": ["demam ringan", "batuk", "kelenjar leher bengkak"],
+        "gejala_utama": ["sakit tenggorokan", "sulit menelan", "tenggorokan merah", "suara serak", "radang tenggorokan", "faringitis", "panas dalam menelan"],
+        "gejala_pendukung": ["demam ringan", "batuk", "kelenjar leher bengkak", "tenggorokan sakit"],
         "saran": [
             "Kumur air garam hangat 3-4x sehari.",
             "Minum air hangat dengan madu dan jahe.",
@@ -380,8 +380,8 @@ DISEASES = {
         "kategori": "metabolik",
         "nama": "Kolesterol Tinggi",
         "definisi": "Kadar lemak (LDL) berlebih dalam darah yang meningkatkan risiko penyakit jantung.",
-        "gejala_utama": ["kolesterol tinggi"],
-        "gejala_pendukung": ["mudah lelah", "tengkuk berat", "kesemutan"],
+        "gejala_utama": ["kolesterol tinggi", "kolesterol", "lemak darah tinggi", "kadar ldl tinggi"],
+        "gejala_pendukung": ["mudah lelah", "tengkuk berat", "kesemutan", "leher belakang kaku"],
         "saran": [
             "Kurangi makanan tinggi lemak jenuh: jeroan, gorengan, kulit ayam.",
             "Perbanyak serat: oat, kacang-kacangan, buah, sayur.",
@@ -395,7 +395,7 @@ DISEASES = {
         "kategori": "metabolik",
         "nama": "Asam Urat / Gout",
         "definisi": "Penyakit akibat penumpukan kristal asam urat di sendi yang menyebabkan radang.",
-        "gejala_utama": ["nyeri sendi", "sendi bengkak", "sendi merah", "asam urat"],
+        "gejala_utama": ["nyeri sendi", "sendi bengkak", "sendi merah", "asam urat", "gout", "sakit sendi", "jempol kaki bengkak"],
         "gejala_pendukung": ["sendi panas", "sulit bergerak", "nyeri jempol kaki"],
         "saran": [
             "Hindari makanan tinggi purin: jeroan, seafood, kacang-kacangan tertentu.",
@@ -410,7 +410,7 @@ DISEASES = {
         "kategori": "muskuloskeletal",
         "nama": "Kram Otot",
         "definisi": "Kontraksi otot tiba-tiba dan tidak disengaja yang menimbulkan nyeri.",
-        "gejala_utama": ["kram otot", "kram", "otot kaku"],
+        "gejala_utama": ["kram otot", "kram", "otot kaku", "kejang otot ringan", "kram kaki"],
         "gejala_pendukung": ["nyeri otot", "otot terasa keras"],
         "saran": [
             "Regangkan otot perlahan ke arah berlawanan dari kram.",
@@ -425,7 +425,7 @@ DISEASES = {
         "kategori": "reproduksi",
         "nama": "Dismenore / Nyeri Haid",
         "definisi": "Nyeri perut bawah saat menstruasi akibat kontraksi rahim.",
-        "gejala_utama": ["nyeri haid", "kram perut bawah", "nyeri menstruasi"],
+        "gejala_utama": ["nyeri haid", "kram perut bawah", "nyeri menstruasi", "dismenore", "sakit perut haid", "sakit datang bulan"],
         "gejala_pendukung": ["mual", "sakit kepala", "lemas", "diare ringan"],
         "saran": [
             "Kompres hangat di perut bawah atau punggung bawah.",
@@ -440,7 +440,7 @@ DISEASES = {
         "kategori": "pencernaan",
         "nama": "Wasir / Hemoroid",
         "definisi": "Pembengkakan pembuluh darah di anus akibat tekanan berlebih saat BAB.",
-        "gejala_utama": ["wasir", "ambeien", "BAB berdarah", "benjolan anus"],
+        "gejala_utama": ["wasir", "ambeien", "BAB berdarah", "benjolan anus", "hemoroid", "anus berdarah", "berak darah anus"],
         "gejala_pendukung": ["nyeri saat BAB", "gatal anus", "lendir"],
         "saran": [
             "Perbanyak serat dan air putih untuk feses lunak.",
