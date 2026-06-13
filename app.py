@@ -6,6 +6,7 @@ import random
 import re
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -39,6 +40,8 @@ PAGES = {
     "KNOWLEDGE": "Knowledge",
     "FIRST_AID": "P3K",
 }
+
+ENABLE_CHAT_EXPORT = True
 
 
 def load_styles():
@@ -97,6 +100,49 @@ def preserve_theme_reset(page="CHAT"):
     init_state()
     st.session_state.theme = theme
     st.session_state.page = page
+
+
+def build_chat_export_payload():
+    messages = []
+    for idx, msg in enumerate(st.session_state.get("messages", []), 1):
+        item = {
+            "index": idx,
+            "role": msg.get("role"),
+            "type": msg.get("type", "message"),
+            "content": msg.get("content", ""),
+        }
+        if msg.get("facilities"):
+            item["facilities"] = msg.get("facilities")
+        if msg.get("user_location"):
+            item["user_location"] = msg.get("user_location")
+        messages.append(item)
+    bot = st.session_state.get("bot")
+    return {
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "app": "HealthBuddy",
+        "purpose": "chatbot-evaluation",
+        "current_page": st.session_state.get("page"),
+        "theme": st.session_state.get("theme"),
+        "fsm_state": bot.get_state_label() if bot else None,
+        "transition_log": bot.get_transition_log() if bot else [],
+        "message_count": len(messages),
+        "messages": messages,
+    }
+
+
+def render_chat_export_button():
+    if not ENABLE_CHAT_EXPORT:
+        return
+    payload = build_chat_export_payload()
+    file_stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    st.download_button(
+        "Export chat JSON",
+        data=json.dumps(payload, ensure_ascii=False, indent=2),
+        file_name=f"healthbuddy-chat-{file_stamp}.json",
+        mime="application/json",
+        key="export_chat_json",
+        use_container_width=True,
+    )
 
 
 def icon(name, size=18):
@@ -793,7 +839,7 @@ def render_chat():
         prompt = st.chat_input("Tulis keluhan atau pertanyaan kesehatan Anda")
         if prompt:
             run_prompt(prompt)
-        b1, b2, b3 = st.columns([1, 1, 1.2], gap="small")
+        b1, b2, b3, b4 = st.columns([1, 1, 1.5, 1.2], gap="small")
         with b1:
             if st.button("Mulai ulang", key="reset_chat", use_container_width=True):
                 preserve_theme_reset("CHAT")
@@ -805,6 +851,8 @@ def render_chat():
             if st.session_state.show_facility_app and st.button("Cari fasilitas kesehatan terdekat", key="lookup_hospital", type="primary", use_container_width=True):
                 st.session_state.hospital_lookup = True
                 st.rerun()
+        with b4:
+            render_chat_export_button()
         render_healthcare_finder_app()
 
     with right:
