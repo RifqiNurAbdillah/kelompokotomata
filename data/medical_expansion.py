@@ -316,7 +316,7 @@ MEDICAL_EXPANSION_DISEASES = {
         'nama': 'Ebola',
         'definisi': 'Penyakit virus berat dengan demam, kelemahan, nyeri otot, muntah atau diare, dan risiko perdarahan; terutama terkait wilayah wabah tertentu.',
         'gejala_utama': ['ebola', 'demam ebola', 'perdarahan ebola'],
-        'gejala_pendukung': ['demam tinggi', 'lemas berat', 'muntah', 'diare', 'perdarahan'],
+        'gejala_pendukung': ['lemas berat', 'muntah'],
         'saran': ['Istirahat cukup dan kurangi aktivitas yang memperberat keluhan.', 'Cukupi cairan dan makan bergizi seimbang.', 'Pantau durasi, intensitas, dan pemicu keluhan.', 'Periksa ke fasilitas kesehatan bila memburuk atau tidak membaik.'],
         'kapan_ke_dokter': 'Segera periksa bila gejala berat, berlangsung lama, memburuk, atau disertai tanda bahaya.',
         'pencegahan': 'Jaga pola hidup sehat, kebersihan, nutrisi, aktivitas fisik, dan lakukan pemeriksaan bila berisiko.',
