@@ -5,6 +5,14 @@ from rapidfuzz import fuzz
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 from data import DISEASES, RED_FLAGS, FIRST_AID, DEFINITIONS, FAQ
+from data.expanded_knowledge import (
+    EXPANDED_SYMPTOM_RULES,
+    FACILITY_ACTION_TERMS_EXPANDED,
+    FACILITY_LOCATION_TERMS_EXPANDED,
+    FACILITY_REQUEST_PHRASES,
+    FACILITY_TARGET_TERMS_EXPANDED,
+    TYPO_ALIASES,
+)
 
 
 STOPWORDS = {
@@ -62,15 +70,25 @@ FACILITY_CONTEXT_TERMS = [
 
 def _is_healthcare_facility_request(text):
     text = text.lower()
-    has_target = any(term in text for term in FACILITY_TARGET_TERMS)
-    has_location = any(term in text for term in FACILITY_LOCATION_TERMS)
-    has_action = any(term in text for term in FACILITY_ACTION_TERMS)
+    text = _apply_typo_aliases(text)
+    if text in FACILITY_REQUEST_PHRASES:
+        return True
+    has_target = any(term in text for term in FACILITY_TARGET_TERMS + FACILITY_TARGET_TERMS_EXPANDED)
+    has_location = any(term in text for term in FACILITY_LOCATION_TERMS + FACILITY_LOCATION_TERMS_EXPANDED)
+    has_action = any(term in text for term in FACILITY_ACTION_TERMS + FACILITY_ACTION_TERMS_EXPANDED)
     has_context = any(term in text for term in FACILITY_CONTEXT_TERMS)
     if has_target and (has_location or has_action or has_context):
         return True
     if has_location and has_action and has_context:
         return True
     return False
+
+
+def _apply_typo_aliases(text):
+    normalized = text.lower()
+    for wrong, correct in TYPO_ALIASES.items():
+        normalized = re.sub(rf"\b{re.escape(wrong)}\b", correct, normalized)
+    return normalized
 
 
 BODY_PART_RULES = [
@@ -205,6 +223,14 @@ class NLPEngine:
         matched_terms = {}
 
         raw_lower = raw_text.lower()
+        raw_lower = _apply_typo_aliases(raw_lower)
+        for rule in EXPANDED_SYMPTOM_RULES:
+            phrase = rule["phrase"]
+            if phrase in raw_lower:
+                disease_key = rule["disease"]
+                scores[disease_key] = scores.get(disease_key, 0) + float(rule["weight"])
+                matched_terms.setdefault(disease_key, set()).add(phrase)
+
         for pattern, disease_weights in BODY_PART_RULES:
             if re.search(pattern, raw_lower):
                 for disease_key, weight in disease_weights:
