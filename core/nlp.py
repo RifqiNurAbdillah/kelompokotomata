@@ -311,16 +311,32 @@ class NLPEngine:
 
     def find_first_aid(self, raw_text):
         normalized = self.normalize(raw_text)
-        tokenized = " ".join(self.tokenize(raw_text))
+        raw_lower = raw_text.lower()
+        
+        #  GUARD 1: Jika ini adalah keluhan tensi/tekanan darah, 
+        # JANGAN ijinkan masuk ke modul P3K Luka/Cedera fisik.
+        if "tekanan darah" in raw_lower or "tensi" in raw_lower:
+            return None
+
+        tokenized = self.tokenize(raw_text)
         candidates = sorted(self.first_aid_index.keys(), key=lambda x: len(x) if x else 0, reverse=True)
+        
+        # PERBAIKAN: Gunakan regex word boundary (\b) agar mencocokkan kata utuh,
+        # bukan potongan karakter di dalam kata lain (mencegah partial substring match)
         for stemmed_key in candidates:
-            if stemmed_key and (stemmed_key in tokenized or stemmed_key in normalized):
-                return self.first_aid_index[stemmed_key]
+            if stemmed_key:
+                # Membuat pola regex kata utuh dari kata kunci p3k
+                pattern = rf"\b{re.escape(stemmed_key)}\b"
+                if re.search(pattern, normalized):
+                    return self.first_aid_index[stemmed_key]
+                    
+        # Fuzzy fallback (hanya jalankan jika kata cukup panjang untuk menghindari salah deteksi)
         for stemmed_key in candidates:
-            if not stemmed_key:
+            if not stemmed_key or len(stemmed_key) < 5:
                 continue
-            if fuzz.token_set_ratio(stemmed_key, normalized) >= 88:
+            if fuzz.token_set_ratio(stemmed_key, normalized) >= 90: # Naikkan batasan ke 90
                 return self.first_aid_index[stemmed_key]
+                
         return None
 
     def find_faq(self, raw_text):
