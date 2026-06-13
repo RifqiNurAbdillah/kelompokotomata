@@ -49,7 +49,7 @@ RED_FLAGS = {
     "pingsan": {
         "kategori": "Umum",
         "alasan": "Pingsan dapat akibat aritmia jantung, hipoglikemia, atau perdarahan.",
-        "tindakan": "Posisi telentang, angkat kaki, longgarkan pakaian, hubungi bantuan medis.",
+        "tindakan": "- Baringkan korban telentang di tempat datar dan aman.\n- Angkat kedua kaki sekitar 30 cm untuk mengalirkan darah ke otak.\n- Longgarkan pakaian di leher, dada, dan pinggang.\n- Pastikan jalan napas terbuka, periksa pernapasan.\n- Jangan berikan makanan atau minuman saat belum sadar penuh.\n- Saat sadar, bantu duduk perlahan, beri minum manis hangat."
     },
     "tidak sadar": {
         "kategori": "Umum",
