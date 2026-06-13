@@ -115,6 +115,40 @@ def _facility_type(tags):
     return "Fasilitas kesehatan"
 
 
+def _compose_address(tags, lat, lon):
+    parts = []
+    direct = tags.get("addr:full") or tags.get("address")
+    if direct:
+        return direct
+    for key in ["addr:street", "addr:hamlet", "addr:village", "addr:subdistrict", "addr:district", "addr:city", "addr:county", "addr:state"]:
+        value = tags.get(key)
+        if value and value not in parts:
+            parts.append(value)
+    if parts:
+        return ", ".join(parts)
+    operator = tags.get("operator")
+    if operator:
+        return f"Area layanan {operator}. Koordinat: {lat:.6f}, {lon:.6f}"
+    return f"Koordinat lokasi: {lat:.6f}, {lon:.6f}"
+
+
+def _google_maps_url(lat, lon, name=""):
+    query = f"{lat},{lon}"
+    if name:
+        query = f"{name} {query}"
+    return "https://www.google.com/maps/search/?api=1&query=" + requests.utils.quote(query)
+
+
+def _is_duplicate(candidate, existing_items):
+    cand_name = candidate["name"].strip().lower()
+    for item in existing_items:
+        same_name = item["name"].strip().lower() == cand_name
+        very_close = _haversine_km(candidate["lat"], candidate["lon"], item["lat"], item["lon"]) <= 0.25
+        if same_name and very_close:
+            return True
+    return False
+
+
 def find_nearby_hospitals(lat, lon, limit=6):
     """Query Overpass API untuk mencari fasilitas kesehatan terdekat.
 
@@ -167,25 +201,20 @@ def find_nearby_hospitals(lat, lon, limit=6):
             name = tags.get("name", "Fasilitas kesehatan tanpa nama")
             facility_type = _facility_type(tags)
             
-            # Ekstrak alamat lengkap
-            address = tags.get("addr:full") or tags.get("addr:street")
-            if not address:
-                address = "Alamat detail tidak tersedia di sistem satelit."
-            else:
-                city = tags.get("addr:city")
-                if city and city not in address:
-                    address += f", {city}"
-                    
+            address = _compose_address(tags, h_lat, h_lon)
             dist = _haversine_km(lat, lon, h_lat, h_lon)
-            
-            hospitals.append({
+            candidate = {
                 "name": name,
                 "type": facility_type,
                 "lat": h_lat,
                 "lon": h_lon,
                 "distance_km": round(dist, 2),
-                "address": address
-            })
+                "address": address,
+                "maps_url": _google_maps_url(h_lat, h_lon, name),
+            }
+            if _is_duplicate(candidate, hospitals):
+                continue
+            hospitals.append(candidate)
             
         # Sort berdasarkan jarak
         hospitals.sort(key=lambda h: h["distance_km"])

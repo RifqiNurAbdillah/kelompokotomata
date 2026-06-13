@@ -621,11 +621,13 @@ def facility_results_body(message, map_id):
     user_location = message.get("user_location", {})
     cards = []
     for item in facilities:
+        maps_url = html.escape(str(item.get("maps_url", f"https://www.google.com/maps/search/?api=1&query={item.get('lat')},{item.get('lon')}")))
         cards.append(
             "<article>"
             f"<strong>{html.escape(str(item.get('name', 'Fasilitas kesehatan')))}</strong>"
             f"<span>{html.escape(str(item.get('type', 'Fasilitas kesehatan')))} - {item.get('distance_km', '-')} km</span>"
             f"<small>{html.escape(str(item.get('address', 'Alamat tidak tersedia')))}</small>"
+            f"<a href=\"{maps_url}\" target=\"_blank\" rel=\"noopener noreferrer\">Buka di Google Maps</a>"
             "</article>"
         )
     body = (
@@ -735,6 +737,8 @@ def render_chat_messages():
         .facility-list article strong {{ margin-bottom: 4px; }}
         .facility-list article span {{ display: block; color: {colors['accentDeep']}; font-weight: 700; font-size: 12px; margin-bottom: 4px; }}
         .facility-list article small {{ color: {colors['muted']}; line-height: 1.5; }}
+        .facility-list article a, .leaflet-popup-content a {{ display: inline-block; margin-top: 8px; color: {colors['accentDeep']}; font-weight: 700; text-decoration: none; }}
+        .facility-list article a:hover, .leaflet-popup-content a:hover {{ text-decoration: underline; }}
         .leaflet-popup-content-wrapper {{ border-radius: 14px; }}
         .leaflet-popup-content strong {{ display: block; margin-bottom: 4px; }}
         .hb-map-pin {{ display: grid; place-items: center; border-radius: 999px 999px 999px 6px; transform: rotate(-45deg); box-shadow: 0 8px 18px rgba(0,0,0,.22); }}
@@ -784,7 +788,8 @@ def render_chat_messages():
             cfg.facilities.forEach((item, idx) => {{
               if (!item.lat || !item.lon) return;
               const pin = L.divIcon({{ className: 'hb-map-pin facility-pin', html: '<span>' + (idx + 1) + '</span>', iconSize: [38, 48], iconAnchor: [19, 44] }});
-              const popup = '<strong>' + item.name + '</strong><br/>' + (item.type || 'Fasilitas kesehatan') + ' - ' + item.distance_km + ' km<br/><small>' + item.address + '</small>';
+              const mapsUrl = item.maps_url || ('https://www.google.com/maps/search/?api=1&query=' + item.lat + ',' + item.lon);
+              const popup = '<strong>' + item.name + '</strong><br/>' + (item.type || 'Fasilitas kesehatan') + ' - ' + item.distance_km + ' km<br/><small>' + item.address + '</small><br/><a href="' + mapsUrl + '" target="_blank" rel="noopener noreferrer">Buka di Google Maps</a>';
               L.marker([item.lat, item.lon], {{ icon: pin }}).addTo(map).bindPopup(popup);
               bounds.push([item.lat, item.lon]);
             }});
