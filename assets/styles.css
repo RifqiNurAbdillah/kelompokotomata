@@ -60,6 +60,92 @@ body,
   background-size: auto, 28px 28px, 28px 28px, auto;
 }
 
+.hb-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hb-particle {
+  position: absolute;
+  display: block;
+  opacity: 0.28;
+  color: var(--accent);
+  animation: hb-float-medical 22s ease-in-out infinite;
+  filter: blur(0.1px);
+}
+
+.hb-particle-cross,
+.hb-particle-plus {
+  width: 22px;
+  height: 22px;
+}
+
+.hb-particle-cross::before,
+.hb-particle-cross::after,
+.hb-particle-plus::before,
+.hb-particle-plus::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.hb-particle-cross::before,
+.hb-particle-plus::before { width: 22px; height: 5px; }
+.hb-particle-cross::after,
+.hb-particle-plus::after { width: 5px; height: 22px; }
+
+.hb-particle-pill,
+.hb-particle-capsule {
+  width: 34px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  transform: rotate(-24deg);
+}
+
+.hb-particle-pill::after,
+.hb-particle-capsule::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  width: 2px;
+  height: 14px;
+  background: currentColor;
+}
+
+.hb-particle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.hb-particle-ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+
+@keyframes hb-float-medical {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0.18; }
+  35% { transform: translate3d(28px, -34px, 0) rotate(18deg); opacity: 0.34; }
+  70% { transform: translate3d(-20px, 26px, 0) rotate(-14deg); opacity: 0.24; }
+}
+
+.block-container {
+  position: relative;
+  z-index: 1;
+}
+
 .stMarkdown,
 .stText,
 div[data-testid="stMarkdownContainer"] {
@@ -789,6 +875,78 @@ div[data-testid="stChatInput"] textarea:focus {
   transition: transform 260ms ease, border-color 260ms ease;
 }
 
+.hb-knowledge-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: -6px 0 20px;
+}
+
+.hb-knowledge-metrics article {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.hb-knowledge-metrics strong {
+  display: block;
+  font-family: "Instrument Serif", serif;
+  font-size: 46px;
+  line-height: 0.9;
+  font-weight: 400;
+  color: var(--accent-deep);
+}
+
+.hb-knowledge-metrics span {
+  display: block;
+  margin-top: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.hb-faq-card {
+  min-height: 210px;
+  padding: 24px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 26px 26px 10px 26px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: transform 260ms ease, border-color 260ms ease;
+}
+
+.hb-faq-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.hb-faq-card span {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent-deep);
+}
+
+.hb-faq-card h3 {
+  margin: 0 0 12px !important;
+  font-size: 30px !important;
+}
+
+.hb-faq-card p {
+  margin: 0;
+  color: var(--fg-soft);
+  line-height: 1.65;
+  font-size: 14px;
+}
+
 .hb-data-card.compact { min-height: 0; }
 
 .hb-data-card:hover {
@@ -1007,6 +1165,10 @@ div[data-testid="stChatInput"] textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .hb-knowledge-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .hb-hero-copy {
     min-height: auto;
     padding: 32px;
@@ -1041,5 +1203,9 @@ div[data-testid="stChatInput"] textarea:focus {
 
   .hb-chat-bubble {
     max-width: 88%;
+  }
+
+  .hb-knowledge-metrics {
+    grid-template-columns: 1fr;
   }
 }

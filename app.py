@@ -492,6 +492,19 @@ def render_header():
             st.rerun()
 
 
+def render_background_particles():
+    items = []
+    shapes = ["cross", "pill", "dot", "capsule", "plus", "ring"]
+    for idx in range(24):
+        shape = shapes[idx % len(shapes)]
+        left = (idx * 17 + 9) % 100
+        top = (idx * 23 + 7) % 100
+        delay = (idx % 9) * -1.7
+        duration = 16 + (idx % 7) * 3
+        items.append(f'<span class="hb-particle hb-particle-{shape}" style="left:{left}%;top:{top}%;animation-delay:{delay}s;animation-duration:{duration}s"></span>')
+    st.markdown('<div class="hb-particles" aria-hidden="true">' + ''.join(items) + '</div>', unsafe_allow_html=True)
+
+
 def render_home():
     st.markdown(
         f"""
@@ -952,8 +965,19 @@ def render_knowledge():
         <section class="hb-shell hb-page-title">
             <span>Knowledge base</span>
             <h1>Direktori kesehatan yang dapat ditelusuri.</h1>
-            <p>Cari penyakit, kategori keluhan, definisi istilah, dan pertanyaan umum.</p>
+            <p>Cari kondisi kesehatan, istilah medis, dan pertanyaan umum dalam format direktori yang lebih rapi.</p>
         </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"""
+        <div class="hb-knowledge-metrics">
+            <article><strong>{len(DISEASES)}</strong><span>Kondisi</span></article>
+            <article><strong>{len(DEFINITIONS)}</strong><span>Istilah</span></article>
+            <article><strong>{len(FAQ)}</strong><span>FAQ</span></article>
+            <article><strong>{len(CATEGORIES)}</strong><span>Kategori</span></article>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -1003,9 +1027,19 @@ def render_definition_grid(query):
 
 def render_faq_grid(query):
     rows = [(key, item) for key, item in FAQ.items() if not query or query in key.lower() or query in item["judul"].lower() or query in item["jawaban"].lower()]
-    for _, item in rows:
-        with st.expander(item["judul"]):
-            st.write(item["jawaban"])
+    cols = st.columns(2, gap="medium")
+    for idx, (_, item) in enumerate(rows):
+        with cols[idx % 2]:
+            st.markdown(
+                f"""
+                <article class="hb-faq-card">
+                    <span>FAQ</span>
+                    <h3>{html.escape(item['judul'])}</h3>
+                    <p>{html.escape(item['jawaban'])}</p>
+                </article>
+                """,
+                unsafe_allow_html=True,
+            )
     if not rows:
         st.info("Tidak ada FAQ yang cocok dengan kata kunci tersebut.")
 
@@ -1067,6 +1101,7 @@ def main():
     init_state()
     load_styles()
     inject_runtime(st.session_state.theme)
+    render_background_particles()
     render_header()
 
     page = st.session_state.page
