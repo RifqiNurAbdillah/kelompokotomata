@@ -187,12 +187,37 @@ class NLPEngine:
 
     def detect_intent(self, raw_text):
         text = raw_text.lower()
+        raw_lower = _apply_typo_aliases(text)
+        
+        # 1. PRIORITAS UTAMA: Cek System/Urgent Perintah (RESET & EMERGENCY_INFO)
+        # Jangan sampai user mau reset bot atau butuh nomor darurat malah terhadang deteksi gejala
+        for urgent_intent in ["RESET", "EMERGENCY_INFO"]:
+            if urgent_intent in INTENT_KEYWORDS:
+                for pat in INTENT_KEYWORDS[urgent_intent]:
+                    if re.search(pat, text):
+                        return urgent_intent
+
+        # 2. PRIORITAS KEDUA: Fasilitas Kesehatan / Pencarian RS
         if _is_healthcare_facility_request(text):
             return "ASK_HOSPITAL"
+            
+        # 3. INTERUPSI GEJALA: Cek apakah mengandung gejala klinis dari database?
+        # Jika user bilang "cara mengatasi nyeri haid", fungsi ini akan memotong di sini
+        for rule in EXPANDED_SYMPTOM_RULES:
+            if rule["phrase"] in raw_lower:
+                # Mengembalikan None memaksa FSM masuk ke alur diagnosis/score_diseases()
+                return None 
+                
+        # 4. PRIORITAS TERAKHIR: Proses Keyword Intent Umum (GREETING, FIRST_AID, DEFINITION, dll)
+        # Bagian ini hanya dieksekusi jika input bersih dari gejala penyakit spesifik
         for intent, patterns in INTENT_KEYWORDS.items():
+            # Lewati yang sudah dicek di langkah awal
+            if intent in ["RESET", "EMERGENCY_INFO"]:
+                continue
             for pat in patterns:
                 if re.search(pat, text):
                     return intent
+                    
         return None
 
     # ---------- Red flag detection (priority) ----------
