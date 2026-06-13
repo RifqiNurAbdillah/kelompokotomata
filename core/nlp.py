@@ -45,6 +45,8 @@ FACILITY_ACTION_TERMS = [
 FACILITY_TARGET_TERMS = [
     "rumah sakit", "rs", "hospital", "klinik", "puskesmas", "dokter", "igd", "faskes",
     "fasilitas kesehatan", "layanan kesehatan", "tempat berobat", "tempat periksa", "unit gawat darurat",
+    "dokter gigi", "dentis", "doket gigi", "dokter mata", "klinik mata", "dokter tht", "klinik tht",
+    "spesialis mata", "spesialis gigi", "spesialis tht", "optik", "igd terdekat",
 ]
 
 FACILITY_LOCATION_TERMS = [
@@ -69,6 +71,23 @@ def _is_healthcare_facility_request(text):
     if has_location and has_action and has_context:
         return True
     return False
+
+
+BODY_PART_RULES = [
+    (r"\b(mata|mataku|mata saya|kelopak|penglihatan|konjungtiva)\b", [("konjungtivitis", 4.5)]),
+    (r"\b(gigi|gigiku|gigi saya|geraham|gusi|ngilu|dentis|dokter gigi)\b", [("sakit gigi", 5.0)]),
+    (r"\b(hidung|hidungku|hidung saya|ingus|meler|pilek|bersin|sinus)\b", [("flu", 4.2), ("alergi", 2.0)]),
+    (r"\b(telinga|kuping|pendengaran|berdengung)\b", [("vertigo", 2.5)]),
+    (r"\b(tenggorokan|menelan|amandel|serak)\b", [("radang tenggorokan", 4.0), ("flu", 1.5)]),
+    (r"\b(perut|lambung|ulu hati|kembung|begah|mual|perih)\b", [("maag", 4.0)]),
+    (r"\b(mencret|bab cair|diare)\b", [("diare", 5.0)]),
+    (r"\b(kulit|gatal|ruam|bentol|biduran|alergi)\b", [("alergi", 3.0), ("biduran", 3.0)]),
+    (r"\b(kepala|pusing|migrain|berdenyut)\b", [("sakit kepala", 3.5), ("migrain", 2.0)]),
+    (r"\b(sendi|lutut|pergelangan|jempol kaki|asam urat)\b", [("asam urat", 3.5)]),
+    (r"\b(otot|kram|pegal|kaku)\b", [("kram otot", 3.5)]),
+    (r"\b(dada sesak|mengi|napas berbunyi|asma)\b", [("asma", 4.5)]),
+    (r"\b(sariawan|luka mulut|mulut pedih)\b", [("sariawan", 4.5)]),
+]
 
 
 class NLPEngine:
@@ -185,6 +204,13 @@ class NLPEngine:
         scores = dict(accumulated) if accumulated else {}
         matched_terms = {}
 
+        raw_lower = raw_text.lower()
+        for pattern, disease_weights in BODY_PART_RULES:
+            if re.search(pattern, raw_lower):
+                for disease_key, weight in disease_weights:
+                    scores[disease_key] = scores.get(disease_key, 0) + weight
+                    matched_terms.setdefault(disease_key, set()).add(pattern)
+
         for stemmed_term, payloads in self.symptom_to_disease.items():
             if not stemmed_term:
                 continue
@@ -193,7 +219,7 @@ class NLPEngine:
                 hit = True
             else:
                 # fuzzy partial match for typo tolerance
-                if len(stemmed_term) >= 5:
+                if len(stemmed_term) >= 5 and " " not in stemmed_term:
                     ratio = fuzz.partial_ratio(stemmed_term, normalized)
                     if ratio >= 88:
                         hit = True

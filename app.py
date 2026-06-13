@@ -389,6 +389,8 @@ def should_wrap_response(raw):
     lower = raw.lower()
     skip_markers = [
         "halo, saya healthbuddy",
+        "hai, senang bertemu",
+        "ada beberapa hal yang bisa saya bantu",
         "saya healthbuddy",
         "healthbuddy dapat membantu",
         "cara berinteraksi",
@@ -427,8 +429,12 @@ def run_prompt(prompt):
     reply_l = reply.lower()
     if st.session_state.bot.state == State.EMERGENCY or any(
         term in prompt_l
-        for term in ["rumah sakit", "rs terdekat", "klinik terdekat", "puskesmas terdekat", "fasilitas kesehatan", "lokasiku", "lokasi saya"]
-    ) or ("segera" in reply_l and any(term in reply_l for term in ["igd", "rumah sakit", "119", "fasilitas kesehatan"])):
+        for term in [
+            "rumah sakit", "rs terdekat", "klinik", "puskesmas", "fasilitas kesehatan", "faskes",
+            "lokasiku", "lokasi saya", "dokter gigi", "dentis", "doket gigi", "dokter mata",
+            "klinik mata", "dokter tht", "klinik tht", "spesialis",
+        ]
+    ):
         st.session_state.show_facility_app = True
         st.session_state.facility_cta_shown = False
     st.session_state.pending_prompt = prompt
