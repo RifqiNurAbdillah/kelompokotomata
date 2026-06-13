@@ -423,6 +423,9 @@ def warm_response(raw, prompt=""):
 
 
 def run_prompt(prompt):
+    for msg in st.session_state.messages:
+        if "animate" in msg:
+            msg["animate"] = False
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.session_state.bot.step(prompt)
     reply = warm_response(st.session_state.bot.get_response(), prompt)
@@ -667,12 +670,19 @@ def render_chat_messages():
     user_anim = (Path(__file__).parent / "assets" / "animation" / "usericonanim.json").read_text(encoding="utf-8")
     html_messages = []
     map_configs = []
+    last_assistant_text_idx = -1
+    for i in range(len(st.session_state.messages) - 1, -1, -1):
+        m = st.session_state.messages[i]
+        if m.get("role") == "assistant" and m.get("type") not in ("facility_results", "facility_cta"):
+            last_assistant_text_idx = i
+            break
+
     for idx, msg in enumerate(st.session_state.messages):
         role = msg["role"]
         label = "Anda" if role == "user" else "HealthBuddy"
         avatar_id = f"avatar_{idx}_{role}"
         animate_avatar = "1" if idx >= max(0, len(st.session_state.messages) - 3) else "0"
-        is_latest_assistant = role == "assistant" and idx == len(st.session_state.messages) - 1 and msg.get("animate")
+        is_latest_assistant = role == "assistant" and idx == last_assistant_text_idx and msg.get("animate")
         if msg.get("type") == "facility_results":
             body, config = facility_results_body(msg, f"facility_map_{idx}")
             map_configs.append(config)
