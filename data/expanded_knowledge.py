@@ -88,7 +88,7 @@ EXPANDED_SYMPTOM_RULES = [
     {"phrase": 'tensi saya tinggi', "disease": 'hipertensi', "weight": 10.0},
     {"phrase": 'tekanan darah tinggi', "disease": 'hipertensi', "weight": 8.0},
     {"phrase": 'darah tinggi', "disease": 'hipertensi', "weight": 8.0},
-    {"phrase": "cara mengatasi nyeri haid", "disease": "dismenore", "weight": 10.0},
+    {"phrase": "mengatasi nyeri haid", "disease": "dismenore", "weight": 10.0},
     {"phrase": "nyeri haid", "disease": "dismenore", "weight": 8.0},
     {"phrase": "sakit perut haid", "disease": "dismenore", "weight": 8.0},
 ]

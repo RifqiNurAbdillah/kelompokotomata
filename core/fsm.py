@@ -155,6 +155,14 @@ class HealthBuddyFSM:
             return
 
         if intent == "ASK_FIRST_AID":
+            # --- TAMBAHAN FILTER: CEK APAKAH INI PENYAKIT ---
+            disease_check = self.nlp.find_disease(text)
+            if disease_check:
+                self._transition(State.ADVICE, f"disease_direct:{disease_check}")
+                self.last_disease = disease_check
+                self.response = self._render_advice(disease_check, direct=True)
+                return
+            # -----------------------------------------------
             topic = self.nlp.find_first_aid(text)
             if topic:
                 self._transition(State.FIRST_AID_VIEW, f"first_aid:{topic}")

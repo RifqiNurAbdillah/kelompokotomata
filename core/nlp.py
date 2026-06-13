@@ -342,7 +342,7 @@ class NLPEngine:
         # Kita masukkan istilah yang sering disalahpahami oleh modul luka
         blocklist = [
             "tekanan darah", "tensi", 
-            "demam", "dbd", "trombosit", "berdarah",  # Mencegah DBD dibajak luka sayat
+            "demam", "dbd", "trombosit", "berdarah", "demam berdarah", "dbd",  # Mencegah DBD dibajak luka sayat
             "maag", "lambung", "diare", "sesak"      # Mencegah penyakit organ dalam
         ]
         
