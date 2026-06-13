@@ -1141,14 +1141,12 @@ def render_about():
     for idx, (name, role) in enumerate(creators, 1):
         initials = ''.join(part[0] for part in name.split()[:2]).upper()
         cards.append(
-            f"""
-            <article class="hb-creator-card">
-                <div class="hb-avatar-holder"><span>{initials}</span></div>
-                <small>Kreator {idx:02d}</small>
-                <h3>{html.escape(name)}</h3>
-                <p>{html.escape(role)}</p>
-            </article>
-            """
+            f'<article class="hb-creator-card">'
+            f'<div class="hb-avatar-holder"><span>{initials}</span></div>'
+            f'<small>Kreator {idx:02d}</small>'
+            f'<h3>{html.escape(name)}</h3>'
+            f'<p>{html.escape(role)}</p>'
+            f'</article>'
         )
     st.markdown(
         '<section class="hb-creators"><div class="hb-creators-head"><span class="hb-kicker">Tim kreator</span><h2>Orang-orang di balik HealthBuddy.</h2></div><div class="hb-creator-grid">'
