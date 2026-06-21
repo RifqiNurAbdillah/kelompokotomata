@@ -689,7 +689,11 @@ def render_chat_messages():
         elif msg.get("type") == "facility_cta":
             body = facility_cta_body()
         else:
-            body = animated_words(msg["content"]) if is_latest_assistant else md_to_html(msg["content"])
+            if is_latest_assistant:
+                raw = html.escape(json.dumps(msg["content"], ensure_ascii=False), quote=True)
+                body = f'<div class="streaming-message" data-raw="{raw}"></div>'
+            else:
+                body = md_to_html(msg["content"])
         html_messages.append(
             f'<div class="hb-chat-row hb-chat-{role}" data-avatar="{avatar_id}" data-role="{role}" data-lottie="{animate_avatar}">'
             f'<div class="hb-chat-avatar" id="{avatar_id}"></div>'
@@ -748,7 +752,7 @@ def render_chat_messages():
         .hb-chat-body li {{ margin-bottom: 5px; line-height: 1.55; }}
         .hb-chat-body em {{ color: {colors['accentDeep']}; }}
         .hb-chat-user .hb-chat-body em {{ color: {colors['accent']}; }}
-        .tw-char {{ display: inline; opacity: 0; animation: charIn 120ms ease forwards; white-space: normal; overflow-wrap: anywhere; }}
+        .streaming-message {{ min-height: 0; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }}
         .hb-thinking-dots {{ display: inline-flex; align-items: center; gap: 6px; height: 22px; }}
         .hb-thinking-dots span {{ width: 8px; height: 8px; border-radius: 999px; background: {colors['accent']}; animation: thinking 1s ease-in-out infinite; }}
         .hb-thinking-dots span:nth-child(2) {{ animation-delay: .15s; }}
@@ -772,7 +776,6 @@ def render_chat_messages():
         .facility-pin {{ background: {colors['accent']}; border: 2px solid #fff; }}
         .user-pin {{ background: {colors['fg']}; border: 2px solid {colors['accent']}; }}
         @keyframes rowIn {{ from {{ opacity: 0; transform: translateY(10px); filter: blur(2px); }} to {{ opacity: 1; transform: translateY(0); filter: blur(0); }} }}
-        @keyframes charIn {{ to {{ opacity: 1; }} }}
         @keyframes thinking {{ 0%, 80%, 100% {{ opacity: .32; transform: translateY(0); }} 40% {{ opacity: 1; transform: translateY(-4px); }} }}
         @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
         @media (max-width: 720px) {{
@@ -801,6 +804,65 @@ def render_chat_messages():
         }});
         const chat = document.getElementById('chatWindow');
         chat.scrollTop = chat.scrollHeight;
+        function escapeHTML(value) {{
+          return value.replace(/[&<>]/g, (ch) => ({{'&':'&amp;','<':'&lt;','>':'&gt;'}}[ch]));
+        }}
+        function inlineMarkdown(value) {{
+          return escapeHTML(value)
+            .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
+            .replace(/_(.*?)_/g, '<em>$1</em>')
+            .replace(/\\*(.*?)\\*/g, '<em>$1</em>');
+        }}
+        function renderPartialMarkdown(raw) {{
+          const lines = raw.split(/\\r?\\n/);
+          const out = [];
+          let inUl = false;
+          let inOl = false;
+          for (const line of lines) {{
+            const trimmed = line.trim();
+            if (!trimmed) {{
+              if (inUl) {{ out.push('</ul>'); inUl = false; }}
+              if (inOl) {{ out.push('</ol>'); inOl = false; }}
+              continue;
+            }}
+            if (new RegExp('^-\\s*$').test(trimmed) || new RegExp('^\\d+\\.\\s*$').test(trimmed)) continue;
+            if (trimmed.startsWith('- ')) {{
+              const content = trimmed.slice(2).trim();
+              if (!content) continue;
+              if (!inUl) {{ out.push('<ul>'); inUl = true; }}
+              out.push('<li>' + inlineMarkdown(content) + '</li>');
+              continue;
+            }}
+            if (new RegExp('^\\d+\\.\\s+').test(trimmed)) {{
+              const content = trimmed.replace(new RegExp('^\\d+\\.\\s+'), '').trim();
+              if (!content) continue;
+              if (!inOl) {{ out.push('<ol>'); inOl = true; }}
+              out.push('<li>' + inlineMarkdown(content) + '</li>');
+              continue;
+            }}
+            if (inUl) {{ out.push('</ul>'); inUl = false; }}
+            if (inOl) {{ out.push('</ol>'); inOl = false; }}
+            out.push('<p>' + inlineMarkdown(trimmed) + '</p>');
+          }}
+          if (inUl) out.push('</ul>');
+          if (inOl) out.push('</ol>');
+          return out.join('');
+        }}
+        document.querySelectorAll('.streaming-message').forEach((target) => {{
+          let raw = '';
+          try {{ raw = JSON.parse(target.dataset.raw || '""'); }} catch (err) {{ raw = target.dataset.raw || ''; }}
+          const len = raw.length;
+          const step = len > 900 ? 3 : (len > 520 ? 2 : 1);
+          const delay = len <= 240 ? 32 : (len <= 720 ? 15 : 7);
+          let pos = 0;
+          target.innerHTML = '';
+          const timer = setInterval(() => {{
+            pos = Math.min(raw.length, pos + step);
+            target.innerHTML = renderPartialMarkdown(raw.slice(0, pos));
+            chat.scrollTop = chat.scrollHeight;
+            if (pos >= raw.length) clearInterval(timer);
+          }}, delay);
+        }});
         const facilityMaps = {maps_json};
         if (window.L && facilityMaps.length) {{
           facilityMaps.forEach((cfg) => {{
