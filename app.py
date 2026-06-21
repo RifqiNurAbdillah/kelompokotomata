@@ -853,7 +853,7 @@ def render_chat_messages():
           try {{ raw = JSON.parse(target.dataset.raw || '""'); }} catch (err) {{ raw = target.dataset.raw || ''; }}
           const len = raw.length;
           const step = len > 900 ? 3 : (len > 520 ? 2 : 1);
-          const delay = len <= 240 ? 32 : (len <= 720 ? 15 : 7);
+          const delay = len <= 240 ? 38 : (len <= 720 ? 18 : 9);
           let pos = 0;
           target.innerHTML = '';
           const timer = setInterval(() => {{
