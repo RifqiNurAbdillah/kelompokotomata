@@ -325,6 +325,9 @@ def animated_words(text):
 
 
 RESPONSE_OPENERS = [
+    "Siap, saya bantu pelan-pelan ya. Keluhan seperti ini memang lebih enak dibaca bertahap.",
+    "Oke, mari kita lihat dengan tenang. Saya akan bantu dari kemungkinan yang paling aman dulu.",
+    "Baik, saya paham arah pertanyaannya. Kita coba urai tanpa langsung menyimpulkan berlebihan.",
     "Saya tangkap keluhan yang Anda sampaikan. Mari kita uraikan pelan-pelan.",
     "Terima kasih sudah menjelaskan. Dari cerita Anda, ada beberapa hal yang bisa diperhatikan.",
     "Saya pahami, kondisi seperti itu tentu membuat tidak nyaman. Berikut rangkuman edukatifnya.",
@@ -364,6 +367,7 @@ CONTEXT_BRIDGES = {
     "batuk": "Karena ada keluhan batuk atau tenggorokan, perhatikan pola batuk, dahak, dan ada tidaknya sesak.",
     "maag": "Karena keluhan mengarah ke lambung, pola makan dan pemicu seperti pedas, asam, kopi, atau telat makan perlu diperhatikan.",
     "pusing": "Karena Anda menyebut pusing atau sakit kepala, penting juga memperhatikan tidur, hidrasi, dan pola makan hari ini.",
+    "punggung": "Karena nyeri punggung sering berkaitan dengan postur, aktivitas, atau tegang otot, coba perhatikan pemicu dan apakah nyerinya menjalar.",
     "diare": "Karena ada keluhan pencernaan, fokus utamanya adalah mencegah dehidrasi dan memilih makanan yang mudah dicerna.",
     "alergi": "Karena keluhan mungkin berkaitan dengan alergi, coba ingat pemicu terakhir seperti makanan, debu, udara dingin, atau obat tertentu.",
 }
@@ -383,7 +387,28 @@ def context_bridge(prompt):
         return CONTEXT_BRIDGES["maag"]
     if any(word in text for word in ["flu", "pilek", "tenggorokan", "dahak"]):
         return CONTEXT_BRIDGES["batuk"]
+    if any(word in text for word in ["punggung", "pinggang", "leher", "bahu", "boyok"]):
+        return CONTEXT_BRIDGES["punggung"]
     return "Saya akan menyesuaikan jawaban dengan gejala yang paling jelas dari pesan Anda."
+
+
+def contextual_follow_up(prompt):
+    text = (prompt or "").lower()
+    if any(word in text for word in ["kepala", "kepalaku", "pusing", "migrain"]):
+        return "Kalau boleh tahu, sakit kepalanya terasa berdenyut, seperti ditekan, atau lebih dominan di satu sisi?"
+    if any(word in text for word in ["punggung", "pinggang", "leher", "bahu"]):
+        return "Apakah nyerinya muncul setelah duduk lama, salah posisi tidur, angkat beban, atau ada kesemutan yang menjalar?"
+    if any(word in text for word in ["perut", "lambung", "maag", "mual", "kembung"]):
+        return "Apakah keluhannya lebih terasa setelah makan, saat telat makan, atau ketika mengonsumsi pedas/kopi?"
+    if any(word in text for word in ["batuk", "tenggorokan", "pilek", "hidung"]):
+        return "Apakah ada demam, dahak berwarna, hidung tersumbat, atau sesak yang ikut muncul?"
+    if any(word in text for word in ["gigi", "gusi", "geraham"]):
+        return "Apakah sakitnya berdenyut, bertambah saat mengunyah, atau ada gusi/pipi yang bengkak?"
+    if any(word in text for word in ["mata", "penglihatan", "kelopak"]):
+        return "Apakah mata juga merah, berair, gatal, atau penglihatan terasa kabur?"
+    if any(word in text for word in ["rokok", "merokok", "vape"]):
+        return "Kalau ingin, saya juga bisa bantu buat langkah sederhana untuk mulai mengurangi rokok secara bertahap."
+    return "Kalau ingin, ceritakan durasi keluhan, bagian yang paling terasa, dan apakah ada gejala lain yang menyertai."
 
 
 def should_wrap_response(raw):
@@ -418,7 +443,8 @@ def warm_response(raw, prompt=""):
         f"{opener}\n\n"
         f"{bridge}\n\n"
         f"{text}\n\n"
-        f"{closer}"
+        f"{closer}\n\n"
+        f"{contextual_follow_up(prompt)}"
     )
 
 
@@ -853,7 +879,7 @@ def render_chat_messages():
           try {{ raw = JSON.parse(target.dataset.raw || '""'); }} catch (err) {{ raw = target.dataset.raw || ''; }}
           const len = raw.length;
           const step = len > 900 ? 3 : (len > 520 ? 2 : 1);
-          const delay = len <= 240 ? 38 : (len <= 720 ? 18 : 9);
+          const delay = len <= 240 ? 47 : (len <= 720 ? 25 : 15);
           let pos = 0;
           target.innerHTML = '';
           const timer = setInterval(() => {{

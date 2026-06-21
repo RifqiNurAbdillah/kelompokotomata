@@ -88,6 +88,28 @@ def _apply_typo_aliases(text):
     normalized = text.lower()
     for wrong, correct in TYPO_ALIASES.items():
         normalized = re.sub(rf"\b{re.escape(wrong)}\b", correct, normalized)
+    natural_fillers = [
+        "akhir akhir ini", "akhir-akhir ini", "akhir2 ini", "akhir ini", "belakangan ini",
+        "beberapa hari ini", "beberapa hari terakhir", "belakangan", "akhirnya", "aku mau tanya",
+        "saya mau tanya", "mau tanya", "boleh tanya", "ingin tanya", "pengen tanya",
+        "permisi", "halo", "hallo", "hai", "hi", "dok", "min", "kak",
+        "kenapa ya", "kenapa yah", "itu kenapa ya", "kira kira kenapa", "kira-kira kenapa",
+        "tolong bantu aku", "tolong bantu saya", "bisa bantu aku", "bisa bantu saya",
+        "aku merasa", "saya merasa", "rasanya", "kok bisa ya", "ya",
+    ]
+    for filler in natural_fillers:
+        normalized = normalized.replace(filler, " ")
+    possessives = {
+        "kepalaku": "kepala", "kepala saya": "kepala", "punggungku": "punggung", "punggung saya": "punggung",
+        "leherku": "leher", "leher saya": "leher", "perutku": "perut", "perut saya": "perut",
+        "dadaku": "dada", "dada saya": "dada", "tanganku": "tangan", "tangan saya": "tangan",
+        "kakiku": "kaki", "kaki saya": "kaki", "mataku": "mata", "mata saya": "mata",
+        "gigiku": "gigi", "gigi saya": "gigi", "hidungku": "hidung", "hidung saya": "hidung",
+        "telingaku": "telinga", "telinga saya": "telinga", "tenggorokanku": "tenggorokan", "tenggorokan saya": "tenggorokan",
+    }
+    for wrong, correct in possessives.items():
+        normalized = re.sub(rf"\b{re.escape(wrong)}\b", correct, normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
     return normalized
 
 
@@ -101,10 +123,18 @@ BODY_PART_RULES = [
     (r"\b(mencret|bab cair|diare)\b", [("diare", 5.0)]),
     (r"\b(kulit|gatal|ruam|bentol|biduran|alergi)\b", [("alergi", 3.0), ("biduran", 3.0)]),
     (r"\b(kepala|pusing|migrain|berdenyut)\b", [("sakit kepala", 3.5), ("migrain", 2.0)]),
+    (r"\b(punggung|pinggang|punggung bawah|boyok)\b", [("nyeri punggung", 4.5), ("nyeri pinggang", 2.5)]),
+    (r"\b(leher|bahu|tengkuk|salah bantal)\b", [("nyeri leher", 4.0), ("kram otot", 1.5)]),
     (r"\b(sendi|lutut|pergelangan|jempol kaki|asam urat)\b", [("asam urat", 3.5)]),
     (r"\b(otot|kram|pegal|kaku)\b", [("kram otot", 3.5)]),
     (r"\b(dada sesak|mengi|napas berbunyi|asma)\b", [("asma", 4.5)]),
     (r"\b(sariawan|luka mulut|mulut pedih)\b", [("sariawan", 4.5)]),
+]
+
+BASIC_SYMPTOM_PATTERNS = [
+    r"\b(sakit|nyeri|pegal|kaku|ngilu|berdenyut|pusing|mual|gatal|sesak|batuk|demam)\b",
+    r"\b(kepala|punggung|pinggang|leher|bahu|perut|dada|gigi|mata|telinga|tenggorokan|hidung)\b.*\b(sakit|nyeri|pegal|kaku|ngilu)\b",
+    r"\b(sakit|nyeri|pegal|kaku|ngilu)\b.*\b(kepala|punggung|pinggang|leher|bahu|perut|dada|gigi|mata|telinga|tenggorokan|hidung)\b",
 ]
 
 
@@ -207,7 +237,11 @@ class NLPEngine:
             if rule["phrase"] in raw_lower:
                 # Mengembalikan None memaksa FSM masuk ke alur diagnosis/score_diseases()
                 return None 
-                
+
+        for pat in BASIC_SYMPTOM_PATTERNS:
+            if re.search(pat, raw_lower):
+                return None
+                 
         # 4. PRIORITAS TERAKHIR: Proses Keyword Intent Umum (GREETING, FIRST_AID, DEFINITION, dll)
         # Bagian ini hanya dieksekusi jika input bersih dari gejala penyakit spesifik
         for intent, patterns in INTENT_KEYWORDS.items():
